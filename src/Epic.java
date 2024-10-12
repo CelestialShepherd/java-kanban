@@ -15,7 +15,7 @@ public class Epic extends Task {
         } else {
             TaskStatus taskStatusTemp = null;
             //Проходим по списку подзадач*
-            //* - для оптимизации прохождение будет реализовано только единожды
+            //* - для оптимизации прохождение по списку будет реализовано только единожды
             for (Subtask subtask: subtasks.values()) {
                 //Если находим подзадачу со статусом IN_PROGRESS, то сразу возвращаем данный статус для всего Эпика
                 if (subtask.getTaskStatus() == TaskStatus.IN_PROGRESS) {
@@ -48,7 +48,8 @@ public class Epic extends Task {
     }
 
     public void getSubtasks() {
-        int counter = 0;
+        System.out.println("Epic subtasks list:");
+        int counter = 1;
         for (Subtask value : subtasks.values()) {
             System.out.println((counter++) + ". " + value.toString());
         }

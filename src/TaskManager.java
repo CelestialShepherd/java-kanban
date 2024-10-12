@@ -5,13 +5,17 @@ public class TaskManager {
     //1. Храним задачи всех типов
     private HashMap<Integer, Task> tasks;
 
+    public TaskManager() {
+        tasks = new HashMap<>();
+    }
+
     public int generateId() {
         return id++;
     }
 
     //2.a. Получение списка всех задач
     public void getTasksList() {
-        System.out.println("\r\nTasks List:");
+        System.out.println("Tasks List:");
         int counter = 1;
         for (Task value : tasks.values()) {
             System.out.println((counter++) + ". " + value.toString());
@@ -29,7 +33,8 @@ public class TaskManager {
     //TODO: Сделать проверку на идентификатор
     //2.d. Создание. Сам объект должен передаваться в качестве параметра
     //4.a,b. Управление статусами задач
-    public void CreateTask(Task task) {
+    public void createTask(Task task) {
+        //TODO: Избавиться от дублирования кода
         if (task.getClass() == Epic.class) {
             Epic epicTask = (Epic) task;
             task.setTaskStatus(epicTask.calculateTaskStatus());
@@ -38,8 +43,13 @@ public class TaskManager {
     }
     //TODO: Изменить проверку на наличие объекта под данным идентификатором
     //2.e. Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра
-    public void UpdateTask(int id, Task task) {
+    public void updateTask(int id, Task task) {
         if (tasks.containsKey(id)) {
+            //TODO: Избавиться от дублирования кода
+            if (task.getClass() == Epic.class) {
+                Epic epicTask = (Epic) task;
+                task.setTaskStatus(epicTask.calculateTaskStatus());
+            }
             tasks.put(id, task);
         } else {
             System.out.println("Ошибка! В списке не существует задачи с указанным идентификатором" +
