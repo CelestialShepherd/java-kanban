@@ -1,71 +1,129 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class TaskManager {
-    private static int id = 0;
+    private static int taskId = 0;
     //1. Храним задачи всех типов
-    private HashMap<Integer, Task> tasks;
+    private final HashMap<Integer, Object> allTasks;
 
     public TaskManager() {
-        tasks = new HashMap<>();
+        allTasks = new HashMap<>();
     }
 
     public int generateId() {
-        return id++;
+        return taskId++;
     }
 
     //2.a. Получение списка всех задач
-    public void getTasksList() {
-        System.out.println("Tasks List:");
-        int counter = 1;
-        for (Task value : tasks.values()) {
-            System.out.println((counter++) + ". " + value.toString());
+    //Получить полный список задач
+    public ArrayList<Object> getAllTasksList() {
+        return new ArrayList<>(allTasks.values());
+    }
+    //Получить список задач типа Задача
+    public ArrayList<Task> getTasksList() {
+        ArrayList<Task> tasksList = new ArrayList<>();
+        for (var task : allTasks.values()) {
+            if (task.getClass() == Task.class) {
+                tasksList.add((Task) task);
+            }
+        }
+        return tasksList;
+    }
+    //Получить список задач типа Эпик
+    public ArrayList<Epic> getEpicsList() {
+        ArrayList<Epic> epicsList = new ArrayList<>();
+        for (var task : allTasks.values()) {
+            if (task.getClass() == Epic.class) {
+                epicsList.add((Epic) task);
+            }
+        }
+        return epicsList;
+    }
+    //Получить список задач типа Подзадача
+    public ArrayList<Subtask> getSubtasksList() {
+        ArrayList<Subtask> subtasksList = new ArrayList<>();
+        for (var task : allTasks.values()) {
+            if (task.getClass() == Subtask.class) {
+                subtasksList.add((Subtask) task);
+            }
+        }
+        return subtasksList;
+    }
+
+    //2.b. Удаление всех задач
+    //Удаление всех задач любого типа
+    public void removeAllTasks() {
+        allTasks.clear();
+    }
+    //Удаление задач типа Задача
+    public void removeTasks() {
+        for (var task : allTasks.entrySet()) {
+            if (task.getValue() == Task.class) {
+                allTasks.remove(task.getKey());
+            }
         }
     }
-    //2.b. Удаление всех задач
-    public void removeAllTasks() {
-        tasks.clear();
+    //Удаление задач типа Эпик
+    public void removeEpics() {
+        for (var task : allTasks.entrySet()) {
+            if (task.getValue() == Epic.class) {
+                allTasks.remove(task.getKey());
+            }
+        }
     }
-    //TODO: Добавить проверку на наличие объекта под данным идентификатором
+    //Удаление задач типа Подзадача
+    public void removeSubtasks() {
+        for (var task : allTasks.entrySet()) {
+            if (task.getValue() == Subtask.class) {
+                allTasks.remove(task.getKey());
+            }
+        }
+    }
+
     //2.c. Получение по идентификатору
-    public Task getTaskById(int id) {
-        return tasks.get(id);
+    public Object getTaskById(int id) {
+        return allTasks.getOrDefault(id, null);
     }
-    //TODO: Сделать проверку на идентификатор
+
     //2.d. Создание. Сам объект должен передаваться в качестве параметра
     //4.a,b. Управление статусами задач
-    public void createTask(Task task) {
-        //TODO: Избавиться от дублирования кода
+    private void addTask(Task task) {
         if (task.getClass() == Epic.class) {
             Epic epicTask = (Epic) task;
             task.setTaskStatus(epicTask.calculateTaskStatus());
         }
-        tasks.put(task.getId(), task);
+        allTasks.put(task.getId(), task);
     }
-    //TODO: Изменить проверку на наличие объекта под данным идентификатором
+    public void createTask(Task task) {
+        addTask(task);
+    }
     //2.e. Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра
-    public void updateTask(int id, Task task) {
-        if (tasks.containsKey(id)) {
-            //TODO: Избавиться от дублирования кода
-            if (task.getClass() == Epic.class) {
-                Epic epicTask = (Epic) task;
-                task.setTaskStatus(epicTask.calculateTaskStatus());
-            }
-            tasks.put(id, task);
+    public void updateTask(Task task) {
+        if (allTasks.containsKey(task.getId())) {
+            addTask(task);
         } else {
-            System.out.println("Ошибка! В списке не существует задачи с указанным идентификатором" +
-                    ", попробуйте добавить данную задачу в качестве новой или укажите другой идентификатор");
+            System.out.println("Ошибка обновления! В списке не существует задачи с указанным идентификатором.");
         }
     }
-    //TODO: Добавить проверку на наличие объекта под данным идентификатором
+
     //2.f. Удаление по идентификатору
     public void removeTaskById(int id) {
-        tasks.remove(id);
+        if (allTasks.containsKey(id)) {
+            //Удаляем все связанные подзадачи, если удален Эпик
+            if (allTasks.get(id).getClass() == Epic.class) {
+                Epic epicTask = (Epic) allTasks.get(id);
+                for (Subtask subtask : epicTask.getSubtasks()) {
+                    allTasks.remove(subtask.getId());
+                }
+            }
+            allTasks.remove(id);
+        } else {
+            System.out.println("Ошибка удаления! В списке не существует задачи с указанным идентификатором.");
+        }
     }
 
-    //TODO: Epic - Добавить проверку на наличие объекта под данным идентификатором
     //3.a. Получение списка всех подзадач определённого эпика
-    public void getAllSubtasksFromEpic(int epicId) {
-        Epic epic = (Epic) tasks.get(epicId);
-        epic.getSubtasks();
+    public ArrayList<Subtask> getAllSubtasksFromEpic(Epic epic) {
+        return epic.getSubtasks();
     }
 }

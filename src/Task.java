@@ -2,8 +2,8 @@ import java.util.Objects;
 
 public class Task {
     private final int id;
-    private String name;
-    private String description;
+    private final String name;
+    private final String description;
     private TaskStatus taskStatus;
 
     public Task(String name, String description) {
@@ -33,29 +33,32 @@ public class Task {
         this.taskStatus = taskStatus;
     }
 
-    //TODO: Добавить вызов удобоваримого вывода статуса
     @Override
     public String toString() {
+        String stringTaskStatus = null;
+        switch (taskStatus) {
+            case NEW -> stringTaskStatus = "To do";
+            case IN_PROGRESS -> stringTaskStatus = "In Progress";
+            case DONE -> stringTaskStatus = "Done";
+        }
+
         return "Task{id=" + id
                 + ", name=" + name
                 + ", description=" + description
-                + ", taskStatus=" + taskStatus
+                + ", taskStatus=" + stringTaskStatus
                 + "}";
     }
 
-    //TODO: Возможно предстоит изменить переопределение методов equals() и hashCode()
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return id == task.id
-                && Objects.equals(name, task.name)
-                && Objects.equals(description, task.description)
-                && taskStatus == task.taskStatus;
+        return id == task.id && Objects.equals(name, task.name) && Objects.equals(description, task.description);
     }
+
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, taskStatus);
+        return Objects.hash(id, name, description);
     }
 }

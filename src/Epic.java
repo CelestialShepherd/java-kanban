@@ -1,7 +1,8 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Epic extends Task {
-    private HashMap<Integer, Subtask> subtasks;
+    private final HashMap<Integer, Subtask> subtasks;
 
     public Epic(String name, String description) {
         super(name, description);
@@ -37,21 +38,15 @@ public class Epic extends Task {
         }
     }
 
-    //TODO: Сделать проверку на уже существующий идентификатор
     public void addSubtask(Subtask subtask) {
         subtasks.put(subtask.getId(), subtask);
     }
 
-    //TODO: Добавить проверку на наличие объекта под данным идентификатором
-    public void removeSubtask(int id) {
-        subtasks.remove(id);
+    public void removeSubtask(Subtask subtask) {
+        subtasks.remove(subtask.getId());
     }
 
-    public void getSubtasks() {
-        System.out.println("Epic subtasks list:");
-        int counter = 1;
-        for (Subtask value : subtasks.values()) {
-            System.out.println((counter++) + ". " + value.toString());
-        }
+    public ArrayList<Subtask> getSubtasks() {
+        return new ArrayList<>(subtasks.values());
     }
 }
