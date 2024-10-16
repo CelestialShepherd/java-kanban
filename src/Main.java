@@ -53,11 +53,11 @@ public class Main {
     //Изменяем статусы задач
         System.out.println("\r\nИзменяем статусы задач");
         task1.setTaskStatus(TaskStatus.DONE);
-        taskManager.updateTask(new Task(task1.getName(), task1.getDescription(), TaskStatus.DONE));
-        taskManager.updateSubtask(new Subtask(subtask1.getEpicId(),
-                subtask1.getName(), subtask1.getDescription(), TaskStatus.DONE));
-        taskManager.updateSubtask(new Subtask(subtask3.getEpicId(),
-                subtask3.getName(), subtask3.getDescription(), TaskStatus.IN_PROGRESS));
+        taskManager.updateTask(task1);
+        subtask1.setTaskStatus(TaskStatus.DONE);
+        taskManager.updateSubtask(subtask1);
+        subtask3.setTaskStatus(TaskStatus.IN_PROGRESS);
+        taskManager.updateSubtask(subtask3);
         //Выводим полный список для проверки
         printAllTasks(taskManager);
     //Удаление задач

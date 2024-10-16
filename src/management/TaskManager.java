@@ -89,6 +89,7 @@ public class TaskManager {
         } else {
             Task newTask = new Task(task.getName(), task.getDescription(), task.getTaskStatus());
             generateId(newTask);
+            task.setId(newTask.getId());
             tasks.put(newTask.getId(), newTask);
         }
     }
@@ -99,6 +100,7 @@ public class TaskManager {
         } else {
             Epic newEpic = new Epic(epic.getName(), epic.getDescription());
             generateId(newEpic);
+            epic.setId(newEpic.getId());
             epics.put(newEpic.getId(), newEpic);
         }
     }
@@ -111,45 +113,51 @@ public class TaskManager {
             System.out.println("Ошибка создания! Эпика с которым связывается" +
                     " подзадача не существует");
         } else {
-            Subtask newSubtask = new Subtask(subtask.getEpicId(), subtask.getName(),
-                    subtask.getDescription(), subtask.getTaskStatus());
+            Subtask newSubtask = new Subtask(subtask.getEpicId(),
+                    subtask.getName(),
+                    subtask.getDescription(),
+                    subtask.getTaskStatus());
             generateId(newSubtask);
+            subtask.setId(newSubtask.getId());
             subtasks.put(newSubtask.getId(), newSubtask);
             //Получаем эпик, связанный с подзадачей
-            Epic epic = getEpicById(newSubtask.getEpicId());
+            Epic epic = getEpicById(subtask.getEpicId());
             //Связываем эпик с подзадачей
-            epic.getSubtasksIds().add(newSubtask.getId());
+            epic.getSubtasksIds().add(subtask.getId());
             //Вычисляем статус Эпика, связанного с подзадачей
             calculateEpicStatus(epic.getId());
         }
     }
 
-    //TODO: Придумать как получить идентификатор обновляемой задачи
     //2.e. Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра
     //Обновление задачи типа Задача
     public void updateTask(Task task) {
         if (tasks.containsKey(task.getId())) {
-            tasks.put(task.getId(), task);
+            tasks.put(task.getId(), new Task(task.getName(), task.getDescription(), task.getTaskStatus()));
         } else {
-            System.out.println("Ошибка обновления! Задачи с указанным идентификатором не существует!");
+            System.out.println("Ошибка обновления! Переданная задача содержит некорректный идентификатор.");
         }
     }
     //Обновление задачи типа Эпик
     //4.a,b. Управление статусами задач
     public void updateEpic(Epic epic) {
         if (epics.containsKey(epic.getId())) {
-            epics.put(epic.getId(), epic);
+            epics.put(epic.getId(), new Epic(epic.getName(), epic.getDescription()));
             //Обновляем статус Эпика после его обновления
             calculateEpicStatus(epic.getId());
         } else {
-            System.out.println("Ошибка обновления! Эпика с указанным идентификатором не существует!");
+            System.out.println("Ошибка обновления! Переданный эпик содержит некорректный идентификатор.");
         }
     }
     //Обновление задачи типа Подзадача
     //4.a,b. Управление статусами задач
     public void updateSubtask(Subtask subtask) {
         if (subtasks.containsKey(subtask.getId())) {
-            subtasks.put(subtask.getId(), subtask);
+            subtasks.put(subtask.getId(),
+                    new Subtask(subtask.getEpicId(),
+                    subtask.getName(),
+                    subtask.getDescription(),
+                    subtask.getTaskStatus()));
             //После изменения подзадачи вычисляем статус Эпика, связанного с ней
             calculateEpicStatus(subtask.getEpicId());
         } else {
