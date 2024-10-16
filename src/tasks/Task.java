@@ -1,8 +1,9 @@
-package Tasks;
+package tasks;
 
 import java.util.Objects;
 
 public class Task {
+    private int id;
     private String name;
     private String description;
     private TaskStatus taskStatus;
@@ -17,6 +18,14 @@ public class Task {
         this.name = name;
         this.description = description;
         this.taskStatus = taskStatus;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {

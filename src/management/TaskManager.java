@@ -1,15 +1,15 @@
-package Management;
+package management;
 
-import Tasks.Epic;
-import Tasks.Subtask;
-import Tasks.Task;
-import Tasks.TaskStatus;
+import tasks.Epic;
+import tasks.Subtask;
+import tasks.Task;
+import tasks.TaskStatus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class TaskManager {
-    private int taskId = 0;
+    private int taskId = 1;
     //1. Храним задачи всех типов
     private HashMap<Integer, Task> tasks;
     private HashMap<Integer, Epic> epics;
@@ -21,8 +21,15 @@ public class TaskManager {
         subtasks = new HashMap<>();
     }
 
-    private int generateId() {
-        return taskId++;
+    private void generateId(Task task) {
+        //Проверка на наличие сгенерированного ранее идентификатора, т.к
+        //сгенерированные идентификаторы начинаются с 1, а идентификатор по умолчанию равен 0
+        if (task.getId() == 0) {
+            task.setId(taskId++);
+        } else {
+            System.out.println("Ошибка генерации идентификатора! " +
+                    "Переданная задача уже имеет идентификатор");
+        }
     }
 
     //2.a. Получение списка всех задач
@@ -41,22 +48,20 @@ public class TaskManager {
 
     //2.b. Удаление всех задач
     //Удаление задач типа Задача
-    public void RemoveAllTasks() {
+    public void removeAllTasks() {
         tasks.clear();
     }
     //Удаление задач типа Эпик
-    public void RemoveAllEpics() {
+    public void removeAllEpics() {
         epics.clear();
         subtasks.clear();
     }
     //Удаление задач типа Подзадача
-    public void RemoveAllSubtasks() {
+    public void removeAllSubtasks() {
+        //Удаляем все идентификаторы подзадач и обновляем статус у каждого эпика
         for (Epic epic : epics.values()) {
-            for (int subtaskId : subtasks.keySet()) {
-                if (epic.getSubtasksIds().contains(subtaskId)) {
-                    epic.removeFromSubtasksIds(subtaskId);
-                }
-            }
+             epic.getSubtasksIds().clear();
+             calculateEpicStatus(epic.getId());
         }
         subtasks.clear();
     }
@@ -77,70 +82,74 @@ public class TaskManager {
 
     //2.d. Создание. Сам объект должен передаваться в качестве параметра
     //Создание задачи типа Задача
-    public void createTask(Task newTask) {
+    public void createTask(Task task) {
         //Проверка на присутствие элемента происходит с помощью переопределенного метода equals()
-        if (tasks.containsValue(newTask)) {
+        if (tasks.containsValue(task)) {
             System.out.println("Ошибка создания! Задача с идентичными параметрами уже была создана.");
         } else {
-            tasks.put(generateId(), newTask);
+            Task newTask = new Task(task.getName(), task.getDescription(), task.getTaskStatus());
+            generateId(newTask);
+            tasks.put(newTask.getId(), newTask);
         }
     }
     //Создание задачи типа Эпик
-    public void createEpic(Epic newEpic) {
-        if (epics.containsValue(newEpic)) {
+    public void createEpic(Epic epic) {
+        if (epics.containsValue(epic)) {
             System.out.println("Ошибка создания! Эпик с идентичными параметрами уже был создан.");
         } else {
-            epics.put(generateId(), newEpic);
+            Epic newEpic = new Epic(epic.getName(), epic.getDescription());
+            generateId(newEpic);
+            epics.put(newEpic.getId(), newEpic);
         }
     }
     //Создание задачи типа Подзадача
     //4.a,b. Управление статусами задач
-    public void createSubtask(Subtask newSubtask) {
-        if (subtasks.containsValue(newSubtask)) {
+    public void createSubtask(Subtask subtask) {
+        if (subtasks.containsValue(subtask)) {
             System.out.println("Ошибка создания! Подзадача с идентичными параметрами уже была создана.");
-        } else if (!epics.containsKey(newSubtask.getEpicId())) {
+        } else if (!epics.containsKey(subtask.getEpicId())) {
             System.out.println("Ошибка создания! Эпика с которым связывается" +
                     " подзадача не существует");
         } else {
-            int newSubtaskId = generateId();
-            subtasks.put(newSubtaskId, newSubtask);
+            Subtask newSubtask = new Subtask(subtask.getEpicId(), subtask.getName(),
+                    subtask.getDescription(), subtask.getTaskStatus());
+            generateId(newSubtask);
+            subtasks.put(newSubtask.getId(), newSubtask);
+            //Получаем эпик, связанный с подзадачей
             Epic epic = getEpicById(newSubtask.getEpicId());
             //Связываем эпик с подзадачей
-            epic.getSubtasksIds().add(newSubtaskId);
+            epic.getSubtasksIds().add(newSubtask.getId());
             //Вычисляем статус Эпика, связанного с подзадачей
-            calculateEpicStatus(newSubtask.getEpicId());
+            calculateEpicStatus(epic.getId());
         }
     }
 
+    //TODO: Придумать как получить идентификатор обновляемой задачи
     //2.e. Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра
     //Обновление задачи типа Задача
-    public void updateTask(int id, Task task) {
-        if (tasks.containsKey(id)) {
-            tasks.put(id, task);
+    public void updateTask(Task task) {
+        if (tasks.containsKey(task.getId())) {
+            tasks.put(task.getId(), task);
         } else {
             System.out.println("Ошибка обновления! Задачи с указанным идентификатором не существует!");
         }
     }
     //Обновление задачи типа Эпик
     //4.a,b. Управление статусами задач
-    public void updateEpic(int id, Epic epic) {
-        if (epics.containsKey(id)) {
-            epics.put(id, epic);
+    public void updateEpic(Epic epic) {
+        if (epics.containsKey(epic.getId())) {
+            epics.put(epic.getId(), epic);
             //Обновляем статус Эпика после его обновления
-            calculateEpicStatus(id);
+            calculateEpicStatus(epic.getId());
         } else {
             System.out.println("Ошибка обновления! Эпика с указанным идентификатором не существует!");
         }
     }
     //Обновление задачи типа Подзадача
     //4.a,b. Управление статусами задач
-    public void updateSubtask(int id, Subtask subtask) {
-        if (subtasks.containsKey(id)) {
-            //Удаляем подзадачу из первичного эпика, если произошла привязка к другому эпику
-            if (subtask.getEpicId() != getSubtaskById(id).getEpicId()) {
-                getEpicById(getSubtaskById(id).getEpicId()).getSubtasksIds().remove(id);
-            }
-            subtasks.put(id, subtask);
+    public void updateSubtask(Subtask subtask) {
+        if (subtasks.containsKey(subtask.getId())) {
+            subtasks.put(subtask.getId(), subtask);
             //После изменения подзадачи вычисляем статус Эпика, связанного с ней
             calculateEpicStatus(subtask.getEpicId());
         } else {
@@ -175,9 +184,10 @@ public class TaskManager {
     public void removeSubtaskById(int id) {
         if (subtasks.containsKey(id)) {
             //Удаляем подзадачу из связанного с ним эпика
-            getEpicById(getSubtaskById(id).getEpicId()).removeFromSubtasksIds(id);
+            Subtask subtask = getSubtaskById(id);
+            getEpicById(subtask.getEpicId()).removeFromSubtasksIds(id);
             //Обновляем статус эпика
-            calculateEpicStatus(getSubtaskById(id).getEpicId());
+            calculateEpicStatus(subtask.getEpicId());
             //Удаление подзадачи
             subtasks.remove(id);
         } else {
