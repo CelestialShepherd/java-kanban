@@ -1,4 +1,5 @@
 import management.InMemoryTaskManager;
+import management.Managers;
 import tasks.Epic;
 import tasks.Subtask;
 import tasks.Task;
@@ -9,6 +10,7 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("Поехали!");
         InMemoryTaskManager taskManager = new InMemoryTaskManager();
+
     //Создание задач
         System.out.println("Создание задач");
         //id: 1
@@ -80,5 +82,7 @@ public class Main {
         System.out.println(taskManager.getAllEpicsList());
         System.out.println("Задачи типа Подзадача:");
         System.out.println(taskManager.getAllSubtasksList());
+        System.out.println("История:");
+        System.out.println(Managers.getDefaultHistory());
     }
 }

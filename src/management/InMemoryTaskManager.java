@@ -14,16 +14,14 @@ public class InMemoryTaskManager implements TaskManager {
     private HashMap<Integer, Task> tasks;
     private HashMap<Integer, Epic> epics;
     private HashMap<Integer, Subtask> subtasks;
-    //Храним историю
-    private ArrayList<Task> history;
 
     public InMemoryTaskManager() {
         tasks = new HashMap<>();
         epics = new HashMap<>();
         subtasks = new HashMap<>();
-        history = new ArrayList<>(10);
     }
 
+    @Override
     public void generateId(Task task) {
         //Проверка на наличие сгенерированного ранее идентификатора, т.к
         //сгенерированные идентификаторы начинаются с 1, а идентификатор по умолчанию равен 0
@@ -37,29 +35,35 @@ public class InMemoryTaskManager implements TaskManager {
 
     //2.a. Получение списка всех задач
     //Получить список задач типа Задача
+    @Override
     public ArrayList<Task> getAllTasksList() {
         return new ArrayList<>(tasks.values());
     }
     //Получить список задач типа Эпик
+    @Override
     public ArrayList<Task> getAllEpicsList() {
         return new ArrayList<>(epics.values());
     }
     //Получить список задач типа Подзадача
+    @Override
     public ArrayList<Task> getAllSubtasksList() {
         return new ArrayList<>(subtasks.values());
     }
 
     //2.b. Удаление всех задач
     //Удаление задач типа Задача
+    @Override
     public void removeAllTasks() {
         tasks.clear();
     }
     //Удаление задач типа Эпик
+    @Override
     public void removeAllEpics() {
         epics.clear();
         subtasks.clear();
     }
     //Удаление задач типа Подзадача
+    @Override
     public void removeAllSubtasks() {
         //Удаляем все идентификаторы подзадач и обновляем статус у каждого эпика
         for (Epic epic : epics.values()) {
@@ -71,26 +75,30 @@ public class InMemoryTaskManager implements TaskManager {
 
     //2.c. Получение по идентификатору
     //Получение задачи типа Задача по идентификатору
+    @Override
     public Task getTaskById(int id) {
         Task task = tasks.get(id);
-        addToHistory(task);
+        Managers.getDefaultHistory().add(task);
         return task;
     }
     //Получение задачи типа Эпик по идентификатору
+    @Override
     public Epic getEpicById(int id) {
         Epic epic = epics.get(id);
-        addToHistory(epic);
+        Managers.getDefaultHistory().add(epic);
         return epic;
     }
     //Получение задачи типа Подзадача по идентификатору
+    @Override
     public Subtask getSubtaskById(int id) {
         Subtask subtask = subtasks.get(id);
-        addToHistory(subtask);
+        Managers.getDefaultHistory().add(subtask);
         return subtask;
     }
 
     //2.d. Создание. Сам объект должен передаваться в качестве параметра
     //Создание задачи типа Задача
+    @Override
     public void createTask(Task task) {
         //Проверка на присутствие элемента происходит с помощью переопределенного метода equals()
         if (tasks.containsValue(task)) {
@@ -103,6 +111,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
     //Создание задачи типа Эпик
+    @Override
     public void createEpic(Epic epic) {
         if (epics.containsValue(epic)) {
             System.out.println("Ошибка создания! Эпик с идентичными параметрами уже был создан.");
@@ -115,6 +124,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
     //Создание задачи типа Подзадача
     //4.a,b. Управление статусами задач
+    @Override
     public void createSubtask(Subtask subtask) {
         if (subtasks.containsValue(subtask)) {
             System.out.println("Ошибка создания! Подзадача с идентичными параметрами уже была создана.");
@@ -140,6 +150,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     //2.e. Обновление. Новая версия объекта с верным идентификатором передаётся в виде параметра
     //Обновление задачи типа Задача
+    @Override
     public void updateTask(Task task) {
         if (tasks.containsKey(task.getId())) {
             tasks.put(task.getId(), new Task(task.getName(), task.getDescription(), task.getTaskStatus()));
@@ -149,6 +160,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
     //Обновление задачи типа Эпик
     //4.a,b. Управление статусами задач
+    @Override
     public void updateEpic(Epic epic) {
         if (epics.containsKey(epic.getId())) {
             epics.put(epic.getId(), new Epic(epic.getName(), epic.getDescription()));
@@ -160,6 +172,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
     //Обновление задачи типа Подзадача
     //4.a,b. Управление статусами задач
+    @Override
     public void updateSubtask(Subtask subtask) {
         if (subtasks.containsKey(subtask.getId())) {
             subtasks.put(subtask.getId(),
@@ -176,6 +189,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     //2.f. Удаление по идентификатору
     //Удаление по идентификатору задач типа Задача
+    @Override
     public void removeTaskById(int id) {
         if (tasks.containsKey(id)) {
             tasks.remove(id);
@@ -184,6 +198,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
     //Удаление по идентификатору задач типа Эпик
+    @Override
     public void removeEpicById(int id) {
         if (epics.containsKey(id)) {
             //Удаляем все связанные подзадачи, если удален Эпик
@@ -198,6 +213,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
     //Удаление по идентификатору задач типа Подзадача
+    @Override
     public void removeSubtaskById(int id) {
         if (subtasks.containsKey(id)) {
             //Удаляем подзадачу из связанного с ним эпика
@@ -213,6 +229,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     //3.a. Получение списка всех подзадач определённого эпика
+    @Override
     public ArrayList<Subtask> getAllSubtasksFromEpic(int id) {
         ArrayList<Subtask> epicSubtasks = new ArrayList<>();
         if (!getEpicById(id).getSubtasksIds().isEmpty()) {
@@ -223,17 +240,8 @@ public class InMemoryTaskManager implements TaskManager {
         return epicSubtasks;
     }
 
-    @Override
-    public ArrayList<Task> getHistory() {
-        return history;
-    }
-    //Вспомогательный метод для добавления задачи в историю
-    private void addToHistory(Task task) {
-        history.add((taskId - 1) % 10, task);
-    }
-
     //Подсчет статуса Эпика
-    public void calculateEpicStatus(int id) {
+    private void calculateEpicStatus(int id) {
         Epic epic = getEpicById(id);
         //Проверка на наличие подзадач, если их нет возвращаем в качестве статуса Эпика NEW
         if (epic.getSubtasksIds().isEmpty()) {
