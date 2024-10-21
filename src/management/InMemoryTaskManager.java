@@ -1,10 +1,11 @@
 package management;
 
-import tasks.Epic;
-import tasks.Subtask;
-import tasks.Task;
-import tasks.TaskStatus;
+import task.Epic;
+import task.Subtask;
+import task.Task;
+import task.TaskStatus;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -14,15 +15,16 @@ public class InMemoryTaskManager implements TaskManager {
     private HashMap<Integer, Task> tasks;
     private HashMap<Integer, Epic> epics;
     private HashMap<Integer, Subtask> subtasks;
+    private HistoryManager historyManager;
 
     public InMemoryTaskManager() {
         tasks = new HashMap<>();
         epics = new HashMap<>();
         subtasks = new HashMap<>();
+        historyManager = Managers.getDefaultHistory();
     }
 
-    @Override
-    public void generateId(Task task) {
+    private void generateId(Task task) {
         //Проверка на наличие сгенерированного ранее идентификатора, т.к
         //сгенерированные идентификаторы начинаются с 1, а идентификатор по умолчанию равен 0
         if (task.getId() == 0) {
@@ -78,21 +80,21 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task getTaskById(int id) {
         Task task = tasks.get(id);
-        Managers.getDefaultHistory().add(task);
+        historyManager.add(task);
         return task;
     }
     //Получение задачи типа Эпик по идентификатору
     @Override
     public Epic getEpicById(int id) {
         Epic epic = epics.get(id);
-        Managers.getDefaultHistory().add(epic);
+        historyManager.add(epic);
         return epic;
     }
     //Получение задачи типа Подзадача по идентификатору
     @Override
     public Subtask getSubtaskById(int id) {
         Subtask subtask = subtasks.get(id);
-        Managers.getDefaultHistory().add(subtask);
+        historyManager.add(subtask);
         return subtask;
     }
 
@@ -238,6 +240,12 @@ public class InMemoryTaskManager implements TaskManager {
             }
         }
         return epicSubtasks;
+    }
+
+    //Получение истории
+    @Override
+    public List<Task> getHistory() {
+        return historyManager.getHistory();
     }
 
     //Подсчет статуса Эпика

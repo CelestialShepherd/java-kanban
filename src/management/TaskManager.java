@@ -1,16 +1,13 @@
 package management;
 
-import tasks.Epic;
-import tasks.Subtask;
-import tasks.Task;
+import task.Epic;
+import task.Subtask;
+import task.Task;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public interface TaskManager {
-    //Генерация идентификатора задачи
-    void generateId(Task task);
-
     //2.a. Получение списка всех задач
     //Получить список задач типа Задача
     ArrayList<Task> getAllTasksList();
@@ -64,4 +61,7 @@ public interface TaskManager {
 
     //3.a. Получение списка всех подзадач определённого эпика
     ArrayList<Subtask> getAllSubtasksFromEpic(int id);
+
+    //Получение истории
+    List<Task> getHistory();
 }

@@ -1,33 +1,30 @@
 package management;
 
-import tasks.Task;
+import task.Task;
 
 import java.util.ArrayList;
 
 public class InMemoryHistoryManager implements HistoryManager{
+    //Константное значение
+    private final int HISTORY_SIZE = 10;
     //Храним историю
     private ArrayList<Task> history;
 
     public InMemoryHistoryManager() {
-        history = new ArrayList<>(10);
+        history = new ArrayList<>();
     }
 
     @Override
     public ArrayList<Task> getHistory() {
-        return history;
+        return new ArrayList<>(history);
     }
     //Вспомогательный метод для добавления задачи в историю
     @Override
     public void add(Task task) {
-        if (history.size() <= 10) {
-            history.add(task);
-        } else {
-            ArrayList<Task> newHistory = new ArrayList<>(10);
-            for (int i = 1; i < 10; i++) {
-                newHistory.add(i - 1, history.get(i));
-            }
-            newHistory.add(task);
-            history = newHistory;
+        //Если история заполнена, удаляем самый старый элемент
+        if (history.size() == HISTORY_SIZE) {
+            history.removeFirst();
         }
+        history.add(task);
     }
 }
