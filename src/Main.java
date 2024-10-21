@@ -1,4 +1,4 @@
-import management.TaskManager;
+import management.InMemoryTaskManager;
 import tasks.Epic;
 import tasks.Subtask;
 import tasks.Task;
@@ -8,7 +8,7 @@ public class Main {
 
     public static void main(String[] args) {
         System.out.println("Поехали!");
-        TaskManager taskManager = new TaskManager();
+        InMemoryTaskManager taskManager = new InMemoryTaskManager();
     //Создание задач
         System.out.println("Создание задач");
         //id: 1
@@ -72,7 +72,7 @@ public class Main {
         printAllTasks(taskManager);
     }
 
-    private static void printAllTasks(TaskManager taskManager) {
+    private static void printAllTasks(InMemoryTaskManager taskManager) {
         System.out.println("Выводим полный список задач");
         System.out.println("Задачи типа Задача:");
         System.out.println(taskManager.getAllTasksList());
