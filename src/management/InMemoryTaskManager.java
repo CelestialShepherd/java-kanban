@@ -139,14 +139,16 @@ public class InMemoryTaskManager implements TaskManager {
                     subtask.getDescription(),
                     subtask.getTaskStatus());
             generateId(newSubtask);
-            subtask.setId(newSubtask.getId());
-            subtasks.put(newSubtask.getId(), newSubtask);
-            //Получаем эпик, связанный с подзадачей
-            Epic epic = getEpicById(subtask.getEpicId());
-            //Связываем эпик с подзадачей
-            epic.addToSubtasksIds(subtask.getId());
-            //Вычисляем статус Эпика, связанного с подзадачей
-            calculateEpicStatus(epic.getId());
+            if (newSubtask.getId() != newSubtask.getEpicId()) {
+                subtask.setId(newSubtask.getId());
+                subtasks.put(newSubtask.getId(), newSubtask);
+                //Получаем эпик, связанный с подзадачей
+                Epic epic = getEpicById(subtask.getEpicId());
+                //Связываем эпик с подзадачей
+                epic.addToSubtasksIds(subtask.getId());
+                //Вычисляем статус Эпика, связанного с подзадачей
+                calculateEpicStatus(epic.getId());
+            }
         }
     }
 
