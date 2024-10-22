@@ -144,7 +144,7 @@ public class InMemoryTaskManager implements TaskManager {
             //Получаем эпик, связанный с подзадачей
             Epic epic = getEpicById(subtask.getEpicId());
             //Связываем эпик с подзадачей
-            epic.getSubtasksIds().add(subtask.getId());
+            epic.addToSubtasksIds(subtask.getId());
             //Вычисляем статус Эпика, связанного с подзадачей
             calculateEpicStatus(epic.getId());
         }
