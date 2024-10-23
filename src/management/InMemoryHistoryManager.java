@@ -18,13 +18,18 @@ public class InMemoryHistoryManager implements HistoryManager{
     public ArrayList<Task> getHistory() {
         return new ArrayList<>(history);
     }
+
     //Вспомогательный метод для добавления задачи в историю
     @Override
     public void add(Task task) {
-        //Если история заполнена, удаляем самый старый элемент
-        if (history.size() == HISTORY_SIZE) {
-            history.removeFirst();
+        if (task.equals(null)){
+            System.out.println("Ошибка добавления в историю! Переданная задача равна null");
+        } else {
+            //Если история заполнена, удаляем самый старый элемент
+            if (history.size() == HISTORY_SIZE) {
+                history.removeFirst();
+            }
+            history.add(new Task(task.getName(), task.getDescription(), task.getTaskStatus()));
         }
-        history.add(new Task(task.getName(), task.getDescription(), task.getTaskStatus()));
     }
 }

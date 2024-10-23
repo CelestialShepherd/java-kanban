@@ -4,134 +4,183 @@ import management.TaskManager;
 import task.Epic;
 import task.Subtask;
 import task.Task;
+import task.TaskStatus;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import task.TaskStatus;
 
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import java.util.List;
 
 class InMemoryTaskManagerTest {
     private TaskManager taskManager;
+    private Task task;
+    private Epic epic;
+    private Subtask subtask;
 
     @BeforeEach
-    public void initializeManager() {
+    public void initializeFields() {
         taskManager = Managers.getDefault();
+        task = new Task("Test task","Task description");
+        taskManager.createTask(task);
+        epic = new Epic("Test epic","Epic description");
+        taskManager.createEpic(epic);
+        subtask = new Subtask(epic.getId(),"Test subtask","Subtask description");
+        taskManager.createSubtask(subtask);
     }
 
+    //Проверьте, что InMemoryTaskManager действительно добавляет задачи разного типа и может найти их по id*
+    //* - данные тесты содержат две проверки, т.к. вторая проверка зависит от уже созданного объекта для первой проверки
+    //Проверка Task
     @Test
     void shouldCreateTaskAndGetItById() {
-        taskManager.createTask(new Task("Test task","Task description"));
         assertNotEquals(0,
                 taskManager.getAllTasksList().size(),
                 "Задача типа Task не была создана");
-        assertNotNull(taskManager.getTaskById(1), "Задача типа Task не была возвращена");
+        assertNotNull(taskManager.getTaskById(task.getId()), "Задача типа Task не была возвращена");
     }
-
     @Test
     void shouldCreateEpicAndGetItById() {
-        taskManager.createEpic(new Epic("Test epic","Epic description"));
         assertNotEquals(0,
                 taskManager.getAllEpicsList().size(),
                 "Задача типа Epic не была создана");
-        assertNotNull(taskManager.getEpicById(1), "Задача типа Epic не была возвращена");
+        assertNotNull(taskManager.getEpicById(epic.getId()), "Задача типа Epic не была возвращена");
     }
-
     @Test
     void shouldCreateSubtaskAndGetItById() {
-        taskManager.createEpic(new Epic("Test epic","Epic description"));
-        taskManager.createSubtask(new Subtask(1,"Test subtask","Subtask description"));
         assertNotEquals(0,
                 taskManager.getAllSubtasksList().size(),
                 "Задача типа Subtask не была создана");
-        assertNotNull(taskManager.getSubtaskById(2), "Задача типа Subtask не была возвращена");
+        assertNotNull(taskManager.getSubtaskById(subtask.getId()), "Задача типа Subtask не была возвращена");
     }
 
+    //Проверьте, что задачи с заданным id и сгенерированным id не конфликтуют внутри менеджера
     @Test
     void shouldNotTwoTasksWithEqualIdCauseErrorInsideManager() {
-        //Задача со сгенерированным id
-        Task task1 = new Task("Test task1","Task1 description");
-        taskManager.createTask(task1);
+        //Задача со сгенерированным id уже была создана перед запуском теста
+        //Получаем сгенерированный id
+        int taskGeneratedId = task.getId();
         //Задача с заданными id
         Task task2 = new Task("Test task2","Task2 description");
-        task2.setId(1);
+        task2.setId(taskGeneratedId);
         taskManager.createTask(task2);
 
-        assertNotNull(taskManager.getTaskById(1), "Не удалось вернуть задачу со сгенерированным id, " +
+        assertNotNull(taskManager.getTaskById(taskGeneratedId), "Не удалось вернуть задачу со сгенерированным id, " +
                         "произошел конфликт внутри менеджера");
-        assertEquals(task1, taskManager.getTaskById(1), "Произошла потеря объекта с заданным id " +
+        assertNotEquals(task2, taskManager.getTaskById(taskGeneratedId), "Произошла потеря объекта со сгенерированным id " +
                         "его заменил объект с заданным id");
     }
 
+    //Создайте тест, в котором проверяется неизменность задачи (по всем полям) при добавлении задачи в менеджер
+    //Ниже представлена группа тестов с проверками на каждое поле
     @Test
-    void shouldNotChangeTaskInsideManagerIfTaskTemplateIsChanged() {
-        Task taskTemplate = new Task("Test task","Task description");
-        taskManager.createTask(taskTemplate);
-        //Создание резервной копии шаблона задачи
-        Task taskTemplateArchive = new Task(taskTemplate.getName(),
-                taskTemplate.getDescription(),
-                taskTemplate.getTaskStatus());
-        taskTemplateArchive.setId(1);
-        //Стартовая архива проверка для легитимности последующих проверок
-        assertEquals(taskTemplateArchive,
-                taskManager.getTaskById(1),
-                "Архив шаблона задачи и задача в менеджере не равны");
-
+    void shouldNotChangeTaskIdInsideManagerIfTaskTemplateIdIsChanged() {
         //Изменяем id шаблона
-        taskTemplate.setId(2);
-        assertNotEquals(taskTemplate,
+        task.setId(2);
+        assertNotEquals(task,
                 taskManager.getAllTasksList().getFirst(),
                 "Задача в менеджере стала равна шаблону после изменения id шаблона");
-
-        //Возвращаем шаблонное значение
-        taskTemplate = returnToTaskTemplateTask(taskTemplateArchive);
+    }
+    @Test
+    void shouldNotChangeTaskNameInsideManagerIfTaskTemplateNameIsChanged() {
         //Изменяем имя шаблона
-        taskTemplate.setName("New name");
-        assertNotEquals(taskTemplate,
-                taskManager.getTaskById(1),
+        task.setName("New name");
+        assertNotEquals(task,
+                taskManager.getTaskById(task.getId()),
                 "Задача в менеджере стала равна шаблону после изменения имени шаблона");
-
-        //Возвращаем шаблонное значение
-        taskTemplate = returnToTaskTemplateTask(taskTemplateArchive);
+    }
+    @Test
+    void shouldNotChangeTaskDescriptionInsideManagerIfTaskTemplateDescriptionIsChanged() {
         //Изменяем описание шаблона
-        taskTemplate.setDescription("New description");
-        assertNotEquals(taskTemplate,
-                taskManager.getTaskById(1),
+        task.setDescription("New description");
+        assertNotEquals(task,
+                taskManager.getTaskById(task.getId()),
                 "Задача в менеджере стала равна шаблону после изменения описания шаблона");
-
-        //Возвращаем шаблонное значение
-        taskTemplate = returnToTaskTemplateTask(taskTemplateArchive);
+    }
+    @Test
+    void shouldNotChangeTaskStatusInsideManagerIfTaskTemplateStatusIsChanged() {
         //Изменяем статус шаблона
-        taskTemplate.setTaskStatus(TaskStatus.IN_PROGRESS);
-        assertNotEquals(taskTemplate,
-                taskManager.getTaskById(1),
+        task.setTaskStatus(TaskStatus.IN_PROGRESS);
+        assertNotEquals(task,
+                taskManager.getTaskById(task.getId()),
                 "Задача в менеджере стала равна шаблону после изменения статуса шаблона");
     }
-    private Task returnToTaskTemplateTask(Task taskTemplate) {
-        Task task = new Task(taskTemplate.getName(), taskTemplate.getDescription(), taskTemplate.getTaskStatus());
-        task.setId(taskTemplate.getId());
 
-        return task;
+    //Группа тестов на проверку работоспособности обновления задач
+    @Test
+    void shouldUpdateTask() {
+        task.setName("Test task2");
+        taskManager.updateTask(task);
+
+        assertEquals(task.getName(),
+                taskManager.getTaskById(task.getId()).getName(),
+                "Задача не обновилась в менеджере");
+    }
+    @Test
+    void shouldUpdateEpic() {
+        epic.setName("Test epic2");
+        taskManager.updateEpic(epic);
+
+        assertEquals(epic.getName(),
+                taskManager.getEpicById(epic.getId()).getName(),
+                "Эпик не обновился в менеджере");
+    }
+    @Test
+    void shouldUpdateSubtask() {
+        subtask.setName("Test subtask2");
+        taskManager.updateSubtask(subtask);
+
+        assertEquals(subtask.getName(),
+                taskManager.getSubtaskById(subtask.getId()).getName(),
+                "Подзадача не обновилась в менеджере");
     }
 
+    //Группа тестов на проверку работоспособности удаления задач
+    @Test
+    void shouldRemoveTask() {
+        taskManager.removeTaskById(task.getId());
+
+        assertFalse(taskManager.getAllTasksList().contains(task));
+    }
+    @Test
+    void shouldRemoveEpic() {
+        taskManager.removeEpicById(epic.getId());
+
+        assertFalse(taskManager.getAllEpicsList().contains(epic));
+    }
+    @Test
+    void shouldRemoveSubtask() {
+        taskManager.removeSubtaskById(subtask.getId());
+
+        assertFalse(taskManager.getAllSubtasksList().contains(subtask));
+    }
+
+    //Убедитесь, что задачи, добавляемые в HistoryManager, сохраняют предыдущую версию задачи и её данных.
     @Test
     void shouldNotHistoryManagerUpdatePreviousVersionsOfTask() {
-        //Создаем задачу
-        Task task = new Task("Test1","Test description");
-        taskManager.createTask(task);
+        //Задача была создана до исполнения теста
         //Вызываем задачу после создания для занесения в историю
         taskManager.getTaskById(task.getId());
         //Вносим изменения в задачу
-        task.setName("Test2");
+        task.setName("Test task2");
         taskManager.updateTask(task);
-        //Вызываем задачу после изменения для занесения в историю
+        //Вызываем задачу после изменения для занесения в историю после изменения
         taskManager.getTaskById(task.getId());
         //Печатаем историю
-        System.out.println("История:\r\n" + taskManager.getHistory());
+        List<Task> history = taskManager.getHistory();
+        System.out.println("История:");
+        for(var task : history) {
+            System.out.println(task);
+        }
+        System.out.println("\r\nПредпоследняя запись: " + history.get(history.size() - 2));
+        System.out.println("Последняя запись:     " + history.getLast());
 
-        assertNotEquals(taskManager.getHistory().getFirst(),
-                taskManager.getHistory().getLast());
+        assertNotEquals(history.get(history.size() - 2),
+                history.getLast(),
+                "В истории хранятся текущие версии задач вместо предыдущих");
     }
 }

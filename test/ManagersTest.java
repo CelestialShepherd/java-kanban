@@ -7,11 +7,16 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ManagersTest {
     @Test
-    public void shouldReturnInitializedManagerImplementations() {
+    public void shouldReturnInitializedTaskManagerImplementation() {
         TaskManager taskManager = Managers.getDefault();
-        HistoryManager historyManager = Managers.getDefaultHistory();
 
         assertNotNull(taskManager, "Возвращен пустой менеджер задач");
+    }
+
+    @Test
+    public void shouldReturnInitializedHistoryManagerImplementation() {
+        HistoryManager historyManager = Managers.getDefaultHistory();
+
         assertNotNull(historyManager, "Возвращен пустой менеджер истории");
     }
 }
