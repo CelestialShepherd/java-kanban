@@ -1,15 +1,14 @@
 package management;
 
 import task.Task;
+import task.Node;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class InMemoryHistoryManager implements HistoryManager{
-    //Константное значение
-    private final int HISTORY_SIZE = 10;
     //Хеш-таблица идентификаторов задач в истории
-    private HashMap<Integer,Integer> HistroryIdsMap = new HashMap<>();
+    private HashMap<Integer,Node> historyIdsMap = new HashMap<>();
     //Храним историю
     private ArrayList<Task> history;
 
@@ -28,16 +27,41 @@ public class InMemoryHistoryManager implements HistoryManager{
         if (task.equals(null)){
             System.out.println("Ошибка добавления в историю! Переданная задача равна null");
         } else {
-            //Если история заполнена, удаляем самый старый элемент
-            if (history.size() == HISTORY_SIZE) {
-                history.removeFirst();
-            }
             history.add(new Task(task.getName(), task.getDescription(), task.getTaskStatus()));
         }
     }
 
     @Override
     public void remove(int id) {
+        removeNode(historyIdsMap.get(id));
         history.remove(id);
+    }
+
+    public void linkLast(int id) {
+        //TODO: Добавить условие проверки, является ли задача новой
+        //TODO: Создать узел через конструктор
+        //TODO: Учесть условие самой первой задачи в списке
+        //Подменяем предыдущий, минуя текущий и удаляем ссылку на следующий
+        Node currNode = historyIdsMap.get(id); //Узел текущей задачи
+        Node prevNode = historyIdsMap.get(currNode.getPrev()); //Узел предыдущей задачи
+        prevNode.setNext(currNode.getNext()); //Связываем предыдущий со следующим
+        currNode.setNext(null); //Удаляем ссылку в текущем, выставляя её в конец списка
+    }
+
+    public ArrayList<Task> getTasks() {
+        ArrayList<Task> tasks = new ArrayList<>();
+        Node node = historyIdsMap.get(0);
+        //TODO: Сделать рефакторинг уикла do...while
+        do {
+            tasks.add(historyIdsMap.get(node.getNext()).getTask());
+        } while (node != null);
+        return tasks;
+    }
+
+    public void removeNode(Node node) {
+        Node prevNode = historyIdsMap.get(node.getPrev());
+        prevNode.setNext(node.getNext());
+        //TODO: Неявная связь между узлом и списком задач, в historyIdsMap так и осталась задача
+        //Частично исправлено в методе remove
     }
 }
