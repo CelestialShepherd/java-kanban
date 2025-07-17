@@ -3,10 +3,13 @@ package management;
 import task.Task;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class InMemoryHistoryManager implements HistoryManager{
     //Константное значение
     private final int HISTORY_SIZE = 10;
+    //Хеш-таблица идентификаторов задач в истории
+    private HashMap<Integer,Integer> HistroryIdsMap = new HashMap<>();
     //Храним историю
     private ArrayList<Task> history;
 
@@ -31,5 +34,10 @@ public class InMemoryHistoryManager implements HistoryManager{
             }
             history.add(new Task(task.getName(), task.getDescription(), task.getTaskStatus()));
         }
+    }
+
+    @Override
+    public void remove(int id) {
+        history.remove(id);
     }
 }
