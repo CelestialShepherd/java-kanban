@@ -8,8 +8,7 @@ import java.util.HashMap;
 
 public class InMemoryHistoryManager implements HistoryManager{
     //Хеш-таблица идентификаторов задач в истории
-    private HashMap<Integer,Node> historyIdsMap = new HashMap<>(); // TODO: Реализовать поля first и last
-    //TODO: Интегрировать события с назначением первого и последнего элементов
+    private HashMap<Integer,Node> historyIdsMap = new HashMap<>();
     private Integer firstId;
     private Integer lastId;
     //Храним историю
@@ -42,37 +41,39 @@ public class InMemoryHistoryManager implements HistoryManager{
         history.remove(id);
     }
 
-    //TODO: Полный рефакторинг
-    //TODO: Если первая задача перемещается вниз, то мы лишаемся первой задачи
+    //TODO: Рефакторинг
     public void linkLast(Task task) {
         Integer currId = task.getId();
-        if (firstId.equals(null)) { //Самая первая задача в списке
+        //Сценарий: добавление самой первой задачи
+        if (firstId.equals(null)) {
             firstId = lastId = currId;
         }
-        if (!getHistory().contains(task)) { //Новая задача
-            //TODO: Пройтись по всему списку, чтобы получить последнюю задачу
-            //TODO: Рефакторинг - возможно следует вывести добавление новой задачи в отдельный метод
+        //Сценарий: добавление новой задачи
+        if (!getHistory().contains(task)) {
             //Секция 1: Добавление ссылки на новую задачу последнему элементу
-            Node prevNode = historyIdsMap.get(currId);
+            Node prevNode = historyIdsMap.get(lastId);
             prevNode.setNext(currId);
-            //Секция 2: Добавление новой задачи в Map
-            Node node = new Node(task, lastId);
-            //TODO: Вынести добавление в конец в отдельный метод
-            historyIdsMap.put(currId, node); //Добавление в историю
+            //Секция 2: Добавление новой задачи
+            Node currNode = new Node(task, lastId);
+            historyIdsMap.put(currId, currNode); //Добавление в историю
             //Секция 3: Изменение ссылки на последний элемент в списке
             lastId = currId;
-        } else { //Уже созданная задача
-            //подменяем предыдущий, минуя текущий и удаляем ссылку на следующий
-            Node currNode = historyIdsMap.get(currId); //Узел текущей задачи
-            Node prevNode = historyIdsMap.get(currNode.getPrev()); //Узел предыдущей задачи
-            prevNode.setNext(currNode.getNext()); //Связываем предыдущий со следующим
-            currNode.setNext(null); //Удаляем ссылку в текущем, выставляя её в конец списка
+        //Сценарий: добавление уже созданной задачи
+        } else {
+            //Подменяем предыдущий, минуя текущий и удаляем ссылку на следующий
+            //Секция 1: Получаем узлы текущей и предыдущей задач
+            Node currNode = historyIdsMap.get(currId);
+            Node prevNode = historyIdsMap.get(currNode.getPrev());
+            //Секция 2: Меняем ссылки на узлах
+            prevNode.setNext(currNode.getNext()); //Предыдущий узел получает ссылку на следующую за текущей задачу
+            currNode.setPrev(lastId); //Выставляем ссылку на последний элемент списка как предыдущий для текущего
+            currNode.setNext(null); //Удаляем ссылку в текущем, окончательно выставляя её в конец списка
         }
     }
 
     public ArrayList<Task> getTasks() {
         ArrayList<Task> tasks = new ArrayList<>();
-        Node node = historyIdsMap.get(0); //TODO: Исправить заполнение первого вхождения
+        Node node = historyIdsMap.get(firstId);
         int next = node.getNext(); //Получаем идентификатор следующей связанной задачи
         do {
             tasks.add(node.getTask()); //Добавляем задачу в возвращаемый список
@@ -85,14 +86,5 @@ public class InMemoryHistoryManager implements HistoryManager{
     public void removeNode(Node node) {
         Node prevNode = historyIdsMap.get(node.getPrev());
         prevNode.setNext(node.getNext());
-        //TODO: Неявная связь между узлом и списком задач, в historyIdsMap так и осталась задача
-        //Частично исправлено в методе remove
-    }
-
-    public int getLastTask() {
-        do {
-            tasks.add(node.getTask()); //Добавляем задачу в возвращаемый список
-            node = historyIdsMap.get(next); //Задаем в качестве центрального узла цикла следующий за текущим
-        } while (node != null);
     }
 }

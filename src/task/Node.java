@@ -5,7 +5,6 @@ public class Node {
     private Integer prev;
     private Integer next;
 
-    //TODO: Добавить конструктор для узла
     public Node(Task task, Integer prev) {
         this.task = task;
         this.prev = prev;
@@ -21,6 +20,10 @@ public class Node {
 
     public Integer getPrev() {
         return prev;
+    }
+
+    public void setPrev(Integer prev) {
+        this.prev = prev;
     }
 
     public Integer getNext() {
