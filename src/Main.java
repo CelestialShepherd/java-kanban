@@ -46,9 +46,9 @@ public class Main {
                 "Довести до готовности",
                 "Желток едва схватился",
                 TaskStatus.NEW);
-        taskManager.createSubtask(subtask1);
-        taskManager.createSubtask(subtask2);
-        taskManager.createSubtask(subtask3);
+        taskManager.createSubtask(subtask1); //История: [3, 5]
+        taskManager.createSubtask(subtask2); //История: [3, 5, 6]
+        taskManager.createSubtask(subtask3); //История: [3, 5, 6, 4, 7]
     //Получаем полный список задач
         printAllTasks(taskManager);
     //Изменяем статусы задач
@@ -82,6 +82,7 @@ public class Main {
         }
         System.out.println("--------------------------------------------");
         System.out.println("Задачи типа Эпик:");
+        //TODO: Исправить утерю задач из истории при выводе эпиков (?)
         for (Task epic : taskManager.getAllEpicsList()) {
             System.out.println(epic);
             for (Task subtask : taskManager.getAllSubtasksFromEpic(epic.getId())) {

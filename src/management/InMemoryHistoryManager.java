@@ -20,7 +20,6 @@ public class InMemoryHistoryManager implements HistoryManager{
 
     @Override
     public ArrayList<Task> getHistory() {
-        history = getTasks();
         return new ArrayList<>(history);
     }
 
@@ -30,56 +29,70 @@ public class InMemoryHistoryManager implements HistoryManager{
         if (task.equals(null)){
             System.out.println("Ошибка добавления в историю! Переданная задача равна null");
         } else {
-            linkLast(new Task(task.getName(), task.getDescription(), task.getTaskStatus()));
-            getHistory(); //Обновление истории
+            linkLast(task.getId(), new Task(task.getName(), task.getDescription(), task.getTaskStatus()));
+            history = getTasks();
         }
     }
 
     @Override
     public void remove(int id) {
         removeNode(historyIdsMap.get(id));
-        history.remove(id);
+        history = getTasks();
     }
 
-    //TODO: Рефакторинг
-    public void linkLast(Task task) {
-        Integer currId = task.getId();
+    //TODO: Рефакторинг (сделать общий функционал для всех трех сценариев)
+    public void linkLast(int currId, Task task) {
         //Сценарий: добавление самой первой задачи
-        if (firstId.equals(null)) {
+        if (firstId == null) {
             firstId = lastId = currId;
         }
-        //Сценарий: добавление новой задачи
-        if (!getHistory().contains(task)) {
+        //Сценарий: добавление задачи, которой не было в списке
+        if (!historyIdsMap.containsKey(currId)) {
             //Секция 1: Добавление ссылки на новую задачу последнему элементу
-            Node prevNode = historyIdsMap.get(lastId);
-            prevNode.setNext(currId);
+            //Если список узлов не пустой - даем последнему узлу ссылку на текущий
+            if (!historyIdsMap.isEmpty()) {
+                historyIdsMap.get(lastId).setNext(currId);
+            }
             //Секция 2: Добавление новой задачи
-            Node currNode = new Node(task, lastId);
+            Node currNode = new Node(task, lastId); //Добавляем узел со ссылкой на бывшую последнюю задачу в списке
             historyIdsMap.put(currId, currNode); //Добавление в историю
             //Секция 3: Изменение ссылки на последний элемент в списке
             lastId = currId;
-        //Сценарий: добавление уже созданной задачи
-        } else {
+        //Сценарий: обновление позиции задачи, уже добавленной в список
+        } else if (currId != lastId) {
             //Подменяем предыдущий, минуя текущий и удаляем ссылку на следующий
-            //Секция 1: Получаем узлы текущей и предыдущей задач
+            //Секция 1: Получаем узел текущей задачи
             Node currNode = historyIdsMap.get(currId);
-            Node prevNode = historyIdsMap.get(currNode.getPrev());
+            //Если задействован первый элемент из списка, следующему за ним присуждается статус первого
+            if (currId == firstId && historyIdsMap.size() > 1) {
+                Node secondNode = historyIdsMap.get(currNode.getNext());
+                //Если задач всего две
+                if (secondNode.getNext() == null) {
+                    secondNode.setNext(currId);
+                }
+                //Назначение второму узлу статуса первого
+                firstId = currNode.getNext();
+            }
+            //Если нет, то предыдущий узел получает ссылку на следующую за текущей задачу
+            else {
+                Node prevNode = historyIdsMap.get(currNode.getPrev());
+                prevNode.setNext(currNode.getNext());
+            }
             //Секция 2: Меняем ссылки на узлах
-            prevNode.setNext(currNode.getNext()); //Предыдущий узел получает ссылку на следующую за текущей задачу
             currNode.setPrev(lastId); //Выставляем ссылку на последний элемент списка как предыдущий для текущего
             currNode.setNext(null); //Удаляем ссылку в текущем, окончательно выставляя её в конец списка
+            //Секция 3: Изменение ссылки на последний элемент в списке
+            lastId = currId;
         }
     }
 
     public ArrayList<Task> getTasks() {
         ArrayList<Task> tasks = new ArrayList<>();
         Node node = historyIdsMap.get(firstId);
-        int next = node.getNext(); //Получаем идентификатор следующей связанной задачи
-        do {
-            tasks.add(node.getTask()); //Добавляем задачу в возвращаемый список
-            node = historyIdsMap.get(next); //Задаем в качестве центрального узла цикла следующий за текущим
-        } while (node != null);
-
+        while (node != null){
+            tasks.add(node.getTask());
+            node = (node.getNext() != null) ? historyIdsMap.get(node.getNext()) : null;
+        }
         return tasks;
     }
 
