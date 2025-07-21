@@ -22,6 +22,9 @@ public class Main {
                 TaskStatus.NEW);
         taskManager.createTask(task1);
         taskManager.createTask(task2);
+        //TODO: Заносим задачи в историю
+        taskManager.getTaskById(task1.getId());
+        taskManager.getTaskById(task2.getId());
     //Создание эпиков
         //id: 3
         Epic epic1 = new Epic("Уход за животным",
@@ -31,6 +34,9 @@ public class Main {
                 "На сковороде");
         taskManager.createEpic(epic1);
         taskManager.createEpic(epic2);
+        //TODO: Заносим эпики в историю
+        taskManager.getEpicById(epic1.getId());
+        taskManager.getEpicById(epic2.getId());
     //Создание подзадач
         //id: 5
         Subtask subtask1 = new Subtask(3,
@@ -62,7 +68,6 @@ public class Main {
         //Выводим полный список для проверки
         printAllTasks(taskManager);
     //Удаление задач
-        //TODO: Исправить запись в историю при удалении задач
         System.out.println("\r\nУдаляем задачи по идентификатору");
         //Удаляем самую первую задачу
         taskManager.removeTaskById(1); //История: [3, 5, 6, 4, 7]

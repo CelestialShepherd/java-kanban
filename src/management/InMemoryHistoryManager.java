@@ -42,7 +42,7 @@ public class InMemoryHistoryManager implements HistoryManager{
     }
 
     //TODO: Рефакторинг (сделать общий функционал для всех сценариев)
-    //TODO: У первого элемента в списке должна удаляться ссылка на предыдущий элемент
+    //TODO: Исправить ошибки при добавлении задач и эпиков по отдельности
     public void linkLast(int currId, Task task) {
         //Сценарий: добавление самой первой задачи
         if (firstId == null) {
@@ -78,13 +78,13 @@ public class InMemoryHistoryManager implements HistoryManager{
                 }
                 //Назначение второму узлу статуса первого
                 firstId = currNode.getNext();
+                secondNode.setPrev(null);
             }
             //Если нет, то предыдущий узел получает ссылку на следующую за текущей задачу
             else {
                 Node prevNode = historyIdsMap.get(currNode.getPrev());
                 prevNode.setNext(currNode.getNext());
             }
-            //TODO: Добавить прямое назначение ссылки последнему элементу ИЛИ провести рефакторинг
             //Секция 2: Меняем ссылки на узлах
             currNode.setPrev(lastId); //Выставляем ссылку на последний элемент списка как предыдущий для текущего
             currNode.setNext(null); //Удаляем ссылку в текущем, окончательно выставляя её в конец списка
@@ -109,12 +109,23 @@ public class InMemoryHistoryManager implements HistoryManager{
     }
 
     public void removeNode(Node node) {
-        //Получаем идентификатор элемента для удаления
-        Integer removeId = node.getTask().getId();
         //Назначаем предыдущему узлу ссылку на следующий узел
-        Node prevNode = historyIdsMap.get(node.getPrev());
-        prevNode.setNext(node.getNext());
-        //Удаляем узел из хеш-таблицы
-        historyIdsMap.remove(removeId);
+        //Проверка на первый и последний элемент
+        if (node.getPrev() == null) {
+            firstId = node.getNext();
+            Node firstNode = historyIdsMap.get(firstId);
+            firstNode.setPrev(null);
+        } else if (node.getNext() == null) {
+            lastId = node.getPrev();
+            Node lastNode = historyIdsMap.get(lastId);
+            lastNode.setNext(null);
+        } else {
+            Node prevNode = historyIdsMap.get(node.getPrev());
+            prevNode.setNext(node.getNext());;
+        }
+        //Удаляем задачу из истории
+        node.setPrev(null);
+        node.setNext(null);
+        history.remove(node.getTask());
     }
 }
