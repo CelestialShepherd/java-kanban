@@ -52,24 +52,24 @@ public class Main {
     //Получаем полный список задач
         printAllTasks(taskManager);
     //Изменяем статусы задач
-        //TODO: Исправить запись в историю при внесении изменений
         System.out.println("\r\nИзменяем статусы задач");
         task1.setTaskStatus(TaskStatus.DONE);
-        taskManager.updateTask(task1);
+        taskManager.updateTask(task1); //История: [3, 5, 6, 4, 7]
         subtask1.setTaskStatus(TaskStatus.DONE);
-        taskManager.updateSubtask(subtask1);
+        taskManager.updateSubtask(subtask1); //История: [4, 7, 3, 5, 6]
         subtask3.setTaskStatus(TaskStatus.IN_PROGRESS);
-        taskManager.updateSubtask(subtask3);
+        taskManager.updateSubtask(subtask3); //История: [3, 5, 6, 4, 7]
         //Выводим полный список для проверки
         printAllTasks(taskManager);
     //Удаление задач
+        //TODO: Исправить запись в историю при удалении задач
         System.out.println("\r\nУдаляем задачи по идентификатору");
         //Удаляем самую первую задачу
-        taskManager.removeTaskById(1);
+        taskManager.removeTaskById(1); //История: [3, 5, 6, 4, 7]
         //Удаляем первый эпик
-        taskManager.removeEpicById(3);
+        taskManager.removeEpicById(3); //История: [4, 7]
         //Удаляем последнюю подзадачу
-        taskManager.removeSubtaskById(7);
+        taskManager.removeSubtaskById(7); //История [4]
         //Выводим полный список для проверки
         printAllTasks(taskManager);
     }
@@ -83,7 +83,6 @@ public class Main {
         }
         System.out.println("--------------------------------------------");
         System.out.println("Задачи типа Эпик:");
-        //TODO: Исправить утерю задач из истории при выводе эпиков (?)
         for (Task epic : taskManager.getAllEpicsList()) {
             System.out.println(epic);
             for (Task subtask : taskManager.getAllSubtasksFromEpic(epic.getId())) {

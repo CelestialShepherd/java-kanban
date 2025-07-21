@@ -20,6 +20,7 @@ public class InMemoryHistoryManager implements HistoryManager{
 
     @Override
     public ArrayList<Task> getHistory() {
+        history = getTasks();
         return new ArrayList<>(history);
     }
 
@@ -40,7 +41,8 @@ public class InMemoryHistoryManager implements HistoryManager{
         history = getTasks();
     }
 
-    //TODO: Рефакторинг (сделать общий функционал для всех трех сценариев)
+    //TODO: Рефакторинг (сделать общий функционал для всех сценариев)
+    //TODO: У первого элемента в списке должна удаляться ссылка на предыдущий элемент
     public void linkLast(int currId, Task task) {
         //Сценарий: добавление самой первой задачи
         if (firstId == null) {
@@ -82,10 +84,16 @@ public class InMemoryHistoryManager implements HistoryManager{
                 Node prevNode = historyIdsMap.get(currNode.getPrev());
                 prevNode.setNext(currNode.getNext());
             }
+            //TODO: Добавить прямое назначение ссылки последнему элементу ИЛИ провести рефакторинг
             //Секция 2: Меняем ссылки на узлах
             currNode.setPrev(lastId); //Выставляем ссылку на последний элемент списка как предыдущий для текущего
             currNode.setNext(null); //Удаляем ссылку в текущем, окончательно выставляя её в конец списка
-            //Секция 3: Изменение ссылки на последний элемент в списке
+            //Секция 3: Вносим изменения в задачу
+            currNode.setTask(task);
+            //Секция 4: Добавляем принудительную ссылку на элемент последнему элементу
+            Node lastNode = historyIdsMap.get(lastId);
+            lastNode.setNext(currId);
+            //Секция 5: Изменение ссылки на последний элемент в списке
             lastId = currId;
         }
     }
@@ -101,7 +109,12 @@ public class InMemoryHistoryManager implements HistoryManager{
     }
 
     public void removeNode(Node node) {
+        //Получаем идентификатор элемента для удаления
+        Integer removeId = node.getTask().getId();
+        //Назначаем предыдущему узлу ссылку на следующий узел
         Node prevNode = historyIdsMap.get(node.getPrev());
         prevNode.setNext(node.getNext());
+        //Удаляем узел из хеш-таблицы
+        historyIdsMap.remove(removeId);
     }
 }

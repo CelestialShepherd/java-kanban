@@ -15,7 +15,9 @@ public class Node {
     }
 
     public void setTask(Task task) {
-        this.task = task;
+        this.task.setName(task.getName());
+        this.task.setDescription(task.getDescription());
+        this.task.setTaskStatus(task.getTaskStatus());
     }
 
     public Integer getPrev() {

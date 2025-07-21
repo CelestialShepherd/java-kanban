@@ -157,7 +157,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateTask(Task task) {
         if (tasks.containsKey(task.getId())) {
-            tasks.put(task.getId(), new Task(task.getName(), task.getDescription(), task.getTaskStatus()));
+            tasks.put(task.getId(), task);
         } else {
             System.out.println("Ошибка обновления! Переданная задача содержит некорректный идентификатор.");
         }
@@ -167,7 +167,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateEpic(Epic epic) {
         if (epics.containsKey(epic.getId())) {
-            epics.put(epic.getId(), new Epic(epic.getName(), epic.getDescription()));
+            epics.put(epic.getId(), epic);
             //Обновляем статус Эпика после его обновления
             calculateEpicStatus(epic.getId());
         } else {
@@ -179,11 +179,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateSubtask(Subtask subtask) {
         if (subtasks.containsKey(subtask.getId())) {
-            subtasks.put(subtask.getId(),
-                    new Subtask(subtask.getEpicId(),
-                            subtask.getName(),
-                            subtask.getDescription(),
-                            subtask.getTaskStatus()));
+            subtasks.put(subtask.getId(), subtask);
             //После изменения подзадачи вычисляем статус Эпика, связанного с ней
             calculateEpicStatus(subtask.getEpicId());
         } else {
@@ -201,6 +197,7 @@ public class InMemoryTaskManager implements TaskManager {
             System.out.println("Ошибка удаления! В списке не существует задачи с указанным идентификатором.");
         }
     }
+    //TODO: Провести рефакторинг удаления задач
     //Удаление по идентификатору задач типа Эпик
     @Override
     public void removeEpicById(int id) {
@@ -209,9 +206,11 @@ public class InMemoryTaskManager implements TaskManager {
             Epic epic = getEpicById(id);
             for (int subtaskId : epic.getSubtasksIds()) {
                 subtasks.remove(subtaskId);
+                historyManager.remove(subtaskId);
             }
             //Удаление эпика
             epics.remove(id);
+            historyManager.remove(id);
         } else {
             System.out.println("Ошибка удаления! В списке не существует эпика с указанным идентификатором.");
         }
@@ -227,6 +226,7 @@ public class InMemoryTaskManager implements TaskManager {
             calculateEpicStatus(subtask.getEpicId());
             //Удаление подзадачи
             subtasks.remove(id);
+            historyManager.remove(id);
         } else {
             System.out.println("Ошибка удаления! В списке не существует подзадачи с указанным идентификатором.");
         }
