@@ -52,6 +52,7 @@ public class Main {
     //Получаем полный список задач
         printAllTasks(taskManager);
     //Изменяем статусы задач
+        //TODO: Исправить запись в историю при внесении изменений
         System.out.println("\r\nИзменяем статусы задач");
         task1.setTaskStatus(TaskStatus.DONE);
         taskManager.updateTask(task1);
