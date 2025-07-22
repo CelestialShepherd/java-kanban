@@ -41,8 +41,7 @@ public class InMemoryHistoryManager implements HistoryManager{
         history = getTasks();
     }
 
-    //TODO: Рефакторинг (сделать общий функционал для всех сценариев)
-    //TODO: Исправить ошибки при добавлении задач и эпиков по отдельности
+    //TODO: Рефакторинг (вынести повторяющиеся команды в отдельные закрытые методы)
     public void linkLast(int currId, Task task) {
         //Сценарий: добавление самой первой задачи
         if (firstId == null) {
@@ -51,9 +50,10 @@ public class InMemoryHistoryManager implements HistoryManager{
         //Сценарий: добавление задачи, которой не было в списке
         if (!historyIdsMap.containsKey(currId)) {
             //Секция 1: Добавление ссылки на новую задачу последнему элементу
-            //Если список узлов не пустой - даем последнему узлу ссылку на текущий
+            //Если список не пустой - даем последнему узлу ссылку на текущий и у первого удаляем ссылку на предыдущий
             if (!historyIdsMap.isEmpty()) {
                 historyIdsMap.get(lastId).setNext(currId);
+                historyIdsMap.get(firstId).setPrev(null);
             }
             //Секция 2: Добавление новой задачи
             Node currNode = new Node(task, lastId); //Добавляем узел со ссылкой на бывшую последнюю задачу в списке
@@ -63,7 +63,7 @@ public class InMemoryHistoryManager implements HistoryManager{
         //Сценарий: обновление позиции задачи, уже добавленной в список
         } else if (currId != lastId) {
             //Подменяем предыдущий, минуя текущий и удаляем ссылку на следующий
-            //Секция 1: Получаем узел текущей задачи
+            //Секция 1: Вносим изменения в предыдущий узел
             Node currNode = historyIdsMap.get(currId);
             //Если задействован первый элемент из списка, следующему за ним присуждается статус первого
             if (currId == firstId && historyIdsMap.size() > 1) {
@@ -85,10 +85,12 @@ public class InMemoryHistoryManager implements HistoryManager{
                 Node prevNode = historyIdsMap.get(currNode.getPrev());
                 prevNode.setNext(currNode.getNext());
             }
-            //Секция 2: Меняем ссылки на узлах
+            //Секция 2: Вносим изменения в следующий за текущим узел
+            Node nextNode = historyIdsMap.get(currNode.getNext());
+            nextNode.setPrev(currNode.getPrev());
+            //Секция 3: Вносим изменения в текущий узел
             currNode.setPrev(lastId); //Выставляем ссылку на последний элемент списка как предыдущий для текущего
             currNode.setNext(null); //Удаляем ссылку в текущем, окончательно выставляя её в конец списка
-            //Секция 3: Вносим изменения в задачу
             currNode.setTask(task);
             //Секция 4: Добавляем принудительную ссылку на элемент последнему элементу
             Node lastNode = historyIdsMap.get(lastId);
@@ -121,7 +123,9 @@ public class InMemoryHistoryManager implements HistoryManager{
             lastNode.setNext(null);
         } else {
             Node prevNode = historyIdsMap.get(node.getPrev());
-            prevNode.setNext(node.getNext());;
+            prevNode.setNext(node.getNext());
+            Node nextNode = historyIdsMap.get(node.getNext());
+            nextNode.setPrev(node.getPrev());
         }
         //Удаляем задачу из истории
         node.setPrev(null);

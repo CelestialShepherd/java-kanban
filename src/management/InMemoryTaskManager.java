@@ -110,6 +110,7 @@ public class InMemoryTaskManager implements TaskManager {
             generateId(newTask);
             task.setId(newTask.getId());
             tasks.put(newTask.getId(), newTask);
+            historyManager.add(task);
         }
     }
     //Создание задачи типа Эпик
@@ -122,6 +123,7 @@ public class InMemoryTaskManager implements TaskManager {
             generateId(newEpic);
             epic.setId(newEpic.getId());
             epics.put(newEpic.getId(), newEpic);
+            historyManager.add(epic);
         }
     }
     //Создание задачи типа Подзадача
@@ -158,6 +160,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void updateTask(Task task) {
         if (tasks.containsKey(task.getId())) {
             tasks.put(task.getId(), task);
+            historyManager.add(task);
         } else {
             System.out.println("Ошибка обновления! Переданная задача содержит некорректный идентификатор.");
         }
@@ -193,11 +196,11 @@ public class InMemoryTaskManager implements TaskManager {
     public void removeTaskById(int id) {
         if (tasks.containsKey(id)) {
             tasks.remove(id);
+            historyManager.remove(id);
         } else {
             System.out.println("Ошибка удаления! В списке не существует задачи с указанным идентификатором.");
         }
     }
-    //TODO: Провести рефакторинг удаления задач
     //Удаление по идентификатору задач типа Эпик
     @Override
     public void removeEpicById(int id) {
