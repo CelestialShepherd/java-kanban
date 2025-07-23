@@ -14,11 +14,11 @@ public class Main {
         System.out.println("Создание задач");
         //id: 1
         Task task1 = new Task("Помыть посуду",
-                "С Фэри", 
+                "С Фэри",
                 TaskStatus.IN_PROGRESS);
         //id: 2
         Task task2 = new Task("Выбросить мусор",
-                "В мусоропровод", 
+                "В мусоропровод",
                 TaskStatus.NEW);
         taskManager.createTask(task1);
         taskManager.createTask(task2);
