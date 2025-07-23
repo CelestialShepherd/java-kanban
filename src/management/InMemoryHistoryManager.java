@@ -6,7 +6,7 @@ import task.Node;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class InMemoryHistoryManager implements HistoryManager{
+public class InMemoryHistoryManager implements HistoryManager {
     //Хеш-таблица идентификаторов задач в истории
     private HashMap<Integer,Node> historyIdsMap = new HashMap<>();
     private Integer firstId;
@@ -27,7 +27,7 @@ public class InMemoryHistoryManager implements HistoryManager{
     //Вспомогательный метод для добавления задачи в историю
     @Override
     public void add(Task task) {
-        if (task.equals(null)){
+        if (task.equals(null)) {
             System.out.println("Ошибка добавления в историю! Переданная задача равна null");
         } else {
             linkLast(task.getId(), new Task(task.getName(), task.getDescription(), task.getTaskStatus()));
@@ -41,7 +41,6 @@ public class InMemoryHistoryManager implements HistoryManager{
         history = getTasks();
     }
 
-    //TODO: Рефакторинг (вынести повторяющиеся команды в отдельные закрытые методы)
     public void linkLast(int currId, Task task) {
         //Сценарий: добавление самой первой задачи
         if (firstId == null) {
@@ -71,17 +70,14 @@ public class InMemoryHistoryManager implements HistoryManager{
                 //Связывание текущей задачи с последней в списке
                 if (secondNode.getNext() == null) {
                     secondNode.setNext(currId);
-                }
-                else {
+                } else {
                     Node lastNode = historyIdsMap.get(lastId);
                     lastNode.setNext(currId);
                 }
                 //Назначение второму узлу статуса первого
                 firstId = currNode.getNext();
                 secondNode.setPrev(null);
-            }
-            //Если нет, то предыдущий узел получает ссылку на следующую за текущей задачу
-            else {
+            } else { //Если нет, то предыдущий узел получает ссылку на следующую за текущей задачу
                 Node prevNode = historyIdsMap.get(currNode.getPrev());
                 prevNode.setNext(currNode.getNext());
             }
@@ -103,7 +99,7 @@ public class InMemoryHistoryManager implements HistoryManager{
     public ArrayList<Task> getTasks() {
         ArrayList<Task> tasks = new ArrayList<>();
         Node node = historyIdsMap.get(firstId);
-        while (node != null){
+        while (node != null) {
             tasks.add(node.getTask());
             node = (node.getNext() != null) ? historyIdsMap.get(node.getNext()) : null;
         }
