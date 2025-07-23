@@ -7,15 +7,23 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class InMemoryHistoryManagerTest {
     private HistoryManager historyManager;
-    private Task task;
+    private Task task1;
+    private Task task2;
+    private Task task3;
 
     @BeforeEach
     public void initializeFields() {
         historyManager = Managers.getDefaultHistory();
-        task = new Task("Test task","Task description");
+        task1 = new Task("Test task1","Task1 description");
+        task1.setId(0);
+        task2 = new Task("Test task2","Task2 description");
+        task2.setId(1);
+        task3 = new Task("Test task3","Task3 description");
+        task3.setId(2);
     }
 
     //Проверка на получение истории
@@ -27,24 +35,37 @@ class InMemoryHistoryManagerTest {
     //Проверка добавления задач в историю
     @Test
     void shouldAddTaskToHistory() {
-        historyManager.add(task);
+        historyManager.add(task1);
 
-        assertEquals(1, historyManager.getHistory().size(), "Задача не была добавлена в историю");
+        assertEquals(task1, historyManager.getHistory().getLast(), "Задача не была добавлена в историю");
     }
 
-    //Проверка, что история вмещает только 10 задач
+    //Проверка удаления из связного списка
     @Test
-    void shouldHistoryStoreOnly10Tasks() {
-        final int HISTORY_SIZE = 10;
-        System.out.println("Добавление задач:");
-        for (int i = 1; i <= HISTORY_SIZE + 1; i++) {
-            System.out.println(i + ".Добавлена задача: " + task);
-            historyManager.add(task);
-        }
-        System.out.println("Размер истории: " + historyManager.getHistory().size());
+    void ShouldDeleteTaskFromHistoryMap() {
+        historyManager.add(task1);
+        historyManager.add(task2);
+        historyManager.remove(task2.getId());
 
-        assertEquals(HISTORY_SIZE,
+        assertEquals(task1,
+                historyManager.getHistory().getLast(),
+                "Задача не была удалена из истории");
+    }
+
+    //Проверка, что история передвигает в конец уже существующую задачу, не увеличиваясь в размерах
+    @Test
+    void ShouldNotHistoryMapAddExistingTask() {
+        System.out.println("Добавление задач:");
+        historyManager.add(task1);
+        historyManager.add(task2);
+        historyManager.add(task1);
+
+        System.out.println("Размер истории: " + historyManager.getHistory().size());
+        assertEquals(2,
                 historyManager.getHistory().size(),
-                "История вместила более " + HISTORY_SIZE + " задач");
+                "История повторно вместила уже существующую задачу и увеличилась в размерах");
+        assertEquals(task1,
+                historyManager.getHistory().getLast(),
+                "История не передвинула в конец уже существующую задачу при повторной попытке добавления");
     }
 }

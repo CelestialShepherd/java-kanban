@@ -158,6 +158,14 @@ class InMemoryTaskManagerTest {
 
         assertFalse(taskManager.getAllSubtasksList().contains(subtask));
     }
+    //Внутри эпиков не должно оставаться неактуальных id подзадач
+    @Test
+    void shouldRemoveSubtasksFromEpicSubtaskIds() {
+        epic.addToSubtasksIds(subtask.getId());
+        taskManager.removeSubtaskById(subtask.getId());
+
+        assertFalse(taskManager.getEpicById(epic.getId()).getSubtasksIds().contains(subtask.getId()));
+    }
 
     //Убедитесь, что задачи, добавляемые в HistoryManager, сохраняют предыдущую версию задачи и её данных.
     @Test
