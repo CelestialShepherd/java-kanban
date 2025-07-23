@@ -41,11 +41,13 @@ public class InMemoryTaskManager implements TaskManager {
     public ArrayList<Task> getAllTasksList() {
         return new ArrayList<>(tasks.values());
     }
+
     //Получить список задач типа Эпик
     @Override
     public ArrayList<Task> getAllEpicsList() {
         return new ArrayList<>(epics.values());
     }
+
     //Получить список задач типа Подзадача
     @Override
     public ArrayList<Task> getAllSubtasksList() {
@@ -58,12 +60,14 @@ public class InMemoryTaskManager implements TaskManager {
     public void removeAllTasks() {
         tasks.clear();
     }
+
     //Удаление задач типа Эпик
     @Override
     public void removeAllEpics() {
         epics.clear();
         subtasks.clear();
     }
+
     //Удаление задач типа Подзадача
     @Override
     public void removeAllSubtasks() {
@@ -83,6 +87,7 @@ public class InMemoryTaskManager implements TaskManager {
         historyManager.add(task);
         return task;
     }
+
     //Получение задачи типа Эпик по идентификатору
     @Override
     public Epic getEpicById(int id) {
@@ -90,6 +95,7 @@ public class InMemoryTaskManager implements TaskManager {
         historyManager.add(epic);
         return epic;
     }
+
     //Получение задачи типа Подзадача по идентификатору
     @Override
     public Subtask getSubtaskById(int id) {
@@ -113,6 +119,7 @@ public class InMemoryTaskManager implements TaskManager {
             historyManager.add(task);
         }
     }
+
     //Создание задачи типа Эпик
     @Override
     public void createEpic(Epic epic) {
@@ -126,6 +133,7 @@ public class InMemoryTaskManager implements TaskManager {
             historyManager.add(epic);
         }
     }
+
     //Создание задачи типа Подзадача
     //4.a,b. Управление статусами задач
     @Override
@@ -165,6 +173,7 @@ public class InMemoryTaskManager implements TaskManager {
             System.out.println("Ошибка обновления! Переданная задача содержит некорректный идентификатор.");
         }
     }
+
     //Обновление задачи типа Эпик
     //4.a,b. Управление статусами задач
     @Override
@@ -177,6 +186,7 @@ public class InMemoryTaskManager implements TaskManager {
             System.out.println("Ошибка обновления! Переданный эпик содержит некорректный идентификатор.");
         }
     }
+
     //Обновление задачи типа Подзадача
     //4.a,b. Управление статусами задач
     @Override
@@ -201,6 +211,7 @@ public class InMemoryTaskManager implements TaskManager {
             System.out.println("Ошибка удаления! В списке не существует задачи с указанным идентификатором.");
         }
     }
+
     //Удаление по идентификатору задач типа Эпик
     @Override
     public void removeEpicById(int id) {
@@ -218,6 +229,7 @@ public class InMemoryTaskManager implements TaskManager {
             System.out.println("Ошибка удаления! В списке не существует эпика с указанным идентификатором.");
         }
     }
+
     //Удаление по идентификатору задач типа Подзадача
     @Override
     public void removeSubtaskById(int id) {
