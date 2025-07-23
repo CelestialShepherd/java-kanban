@@ -62,7 +62,6 @@ public interface TaskManager {
     void updateSubtask(Subtask subtask);
 
     //2.f. Удаление по идентификатору
-
     //Удаление по идентификатору задач типа Задача
     void removeTaskById(int id);
 
