@@ -41,11 +41,13 @@ public class InMemoryTaskManager implements TaskManager {
     public ArrayList<Task> getAllTasksList() {
         return new ArrayList<>(tasks.values());
     }
+
     //Получить список задач типа Эпик
     @Override
     public ArrayList<Task> getAllEpicsList() {
         return new ArrayList<>(epics.values());
     }
+
     //Получить список задач типа Подзадача
     @Override
     public ArrayList<Task> getAllSubtasksList() {
@@ -58,12 +60,14 @@ public class InMemoryTaskManager implements TaskManager {
     public void removeAllTasks() {
         tasks.clear();
     }
+
     //Удаление задач типа Эпик
     @Override
     public void removeAllEpics() {
         epics.clear();
         subtasks.clear();
     }
+
     //Удаление задач типа Подзадача
     @Override
     public void removeAllSubtasks() {
@@ -83,6 +87,7 @@ public class InMemoryTaskManager implements TaskManager {
         historyManager.add(task);
         return task;
     }
+
     //Получение задачи типа Эпик по идентификатору
     @Override
     public Epic getEpicById(int id) {
@@ -90,6 +95,7 @@ public class InMemoryTaskManager implements TaskManager {
         historyManager.add(epic);
         return epic;
     }
+
     //Получение задачи типа Подзадача по идентификатору
     @Override
     public Subtask getSubtaskById(int id) {
@@ -110,8 +116,10 @@ public class InMemoryTaskManager implements TaskManager {
             generateId(newTask);
             task.setId(newTask.getId());
             tasks.put(newTask.getId(), newTask);
+            historyManager.add(task);
         }
     }
+
     //Создание задачи типа Эпик
     @Override
     public void createEpic(Epic epic) {
@@ -122,8 +130,10 @@ public class InMemoryTaskManager implements TaskManager {
             generateId(newEpic);
             epic.setId(newEpic.getId());
             epics.put(newEpic.getId(), newEpic);
+            historyManager.add(epic);
         }
     }
+
     //Создание задачи типа Подзадача
     //4.a,b. Управление статусами задач
     @Override
@@ -157,33 +167,32 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateTask(Task task) {
         if (tasks.containsKey(task.getId())) {
-            tasks.put(task.getId(), new Task(task.getName(), task.getDescription(), task.getTaskStatus()));
+            tasks.put(task.getId(), task);
+            historyManager.add(task);
         } else {
             System.out.println("Ошибка обновления! Переданная задача содержит некорректный идентификатор.");
         }
     }
+
     //Обновление задачи типа Эпик
     //4.a,b. Управление статусами задач
     @Override
     public void updateEpic(Epic epic) {
         if (epics.containsKey(epic.getId())) {
-            epics.put(epic.getId(), new Epic(epic.getName(), epic.getDescription()));
+            epics.put(epic.getId(), epic);
             //Обновляем статус Эпика после его обновления
             calculateEpicStatus(epic.getId());
         } else {
             System.out.println("Ошибка обновления! Переданный эпик содержит некорректный идентификатор.");
         }
     }
+
     //Обновление задачи типа Подзадача
     //4.a,b. Управление статусами задач
     @Override
     public void updateSubtask(Subtask subtask) {
         if (subtasks.containsKey(subtask.getId())) {
-            subtasks.put(subtask.getId(),
-                    new Subtask(subtask.getEpicId(),
-                            subtask.getName(),
-                            subtask.getDescription(),
-                            subtask.getTaskStatus()));
+            subtasks.put(subtask.getId(), subtask);
             //После изменения подзадачи вычисляем статус Эпика, связанного с ней
             calculateEpicStatus(subtask.getEpicId());
         } else {
@@ -197,10 +206,12 @@ public class InMemoryTaskManager implements TaskManager {
     public void removeTaskById(int id) {
         if (tasks.containsKey(id)) {
             tasks.remove(id);
+            historyManager.remove(id);
         } else {
             System.out.println("Ошибка удаления! В списке не существует задачи с указанным идентификатором.");
         }
     }
+
     //Удаление по идентификатору задач типа Эпик
     @Override
     public void removeEpicById(int id) {
@@ -209,13 +220,16 @@ public class InMemoryTaskManager implements TaskManager {
             Epic epic = getEpicById(id);
             for (int subtaskId : epic.getSubtasksIds()) {
                 subtasks.remove(subtaskId);
+                historyManager.remove(subtaskId);
             }
             //Удаление эпика
             epics.remove(id);
+            historyManager.remove(id);
         } else {
             System.out.println("Ошибка удаления! В списке не существует эпика с указанным идентификатором.");
         }
     }
+
     //Удаление по идентификатору задач типа Подзадача
     @Override
     public void removeSubtaskById(int id) {
@@ -227,6 +241,7 @@ public class InMemoryTaskManager implements TaskManager {
             calculateEpicStatus(subtask.getEpicId());
             //Удаление подзадачи
             subtasks.remove(id);
+            historyManager.remove(id);
         } else {
             System.out.println("Ошибка удаления! В списке не существует подзадачи с указанным идентификатором.");
         }

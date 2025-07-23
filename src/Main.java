@@ -14,11 +14,11 @@ public class Main {
         System.out.println("Создание задач");
         //id: 1
         Task task1 = new Task("Помыть посуду",
-                "С Фэри", 
+                "С Фэри",
                 TaskStatus.IN_PROGRESS);
         //id: 2
         Task task2 = new Task("Выбросить мусор",
-                "В мусоропровод", 
+                "В мусоропровод",
                 TaskStatus.NEW);
         taskManager.createTask(task1);
         taskManager.createTask(task2);
@@ -54,21 +54,24 @@ public class Main {
     //Изменяем статусы задач
         System.out.println("\r\nИзменяем статусы задач");
         task1.setTaskStatus(TaskStatus.DONE);
-        taskManager.updateTask(task1);
+        //История до: [1, 2, 3, 5, 6, 4, 7]
+        taskManager.updateTask(task1); //История: [2, 3, 5, 6, 4, 7, 1]
         subtask1.setTaskStatus(TaskStatus.DONE);
-        taskManager.updateSubtask(subtask1);
+        taskManager.updateSubtask(subtask1); //История: [2, 4, 7, 1, 3, 5, 6]
         subtask3.setTaskStatus(TaskStatus.IN_PROGRESS);
-        taskManager.updateSubtask(subtask3);
+        taskManager.updateSubtask(subtask3); //История: [2, 1, 3, 5, 6, 4, 7]
         //Выводим полный список для проверки
         printAllTasks(taskManager);
     //Удаление задач
         System.out.println("\r\nУдаляем задачи по идентификатору");
         //Удаляем самую первую задачу
-        taskManager.removeTaskById(1);
+        taskManager.removeTaskById(1); //История: [2, 3, 5, 6, 4, 7]
         //Удаляем первый эпик
-        taskManager.removeEpicById(3);
+        taskManager.removeEpicById(3); //История: [2, 4, 7]
         //Удаляем последнюю подзадачу
-        taskManager.removeSubtaskById(7);
+        taskManager.removeSubtaskById(7); //История [2, 4]
+        //Удаляем эпик без подзадач
+        taskManager.removeEpicById(4); //История [2]
         //Выводим полный список для проверки
         printAllTasks(taskManager);
     }
