@@ -6,9 +6,14 @@ import task.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+//TODO: Требуется проверить удаление из разных частей (начало, середина, конец)
+//TODO: Требуется проверить порядок элементов в истории после удаления
 class InMemoryHistoryManagerTest {
     private HistoryManager historyManager;
     private Task task1;
@@ -40,16 +45,37 @@ class InMemoryHistoryManagerTest {
         assertEquals(task1, historyManager.getHistory().getLast(), "Задача не была добавлена в историю");
     }
 
-    //Проверка удаления из связного списка
+    //Проверка удаления из начала связного списка
     @Test
-    void ShouldDeleteTaskFromHistoryMap() {
+    void ShouldRemoveFirstTaskFromHistoryMap() {
         historyManager.add(task1);
         historyManager.add(task2);
+        historyManager.add(task3);
+        historyManager.remove(task1.getId());
+
+        assertFalse(historyManager.getHistory().contains(task1));
+    }
+
+    //Проверка удаления из середины связного списка
+    @Test
+    void ShouldRemoveMiddleTaskFromHistoryMap() {
+        historyManager.add(task1);
+        historyManager.add(task2);
+        historyManager.add(task3);
         historyManager.remove(task2.getId());
 
-        assertEquals(task1,
-                historyManager.getHistory().getLast(),
-                "Задача не была удалена из истории");
+        assertFalse(historyManager.getHistory().contains(task2));
+    }
+
+    //Проверка удаления из конца связного списка
+    @Test
+    void ShouldRemoveLastTaskFromHistoryMap() {
+        historyManager.add(task1);
+        historyManager.add(task2);
+        historyManager.add(task3);
+        historyManager.remove(task3.getId());
+
+        assertFalse(historyManager.getHistory().contains(task3));
     }
 
     //Проверка, что история передвигает в конец уже существующую задачу, не увеличиваясь в размерах
