@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+//TODO: Требуется проверить удаление из разных частей (начало, середина, конец)
+//TODO: Требуется проверить порядок элементов в истории после удаления
 class InMemoryHistoryManagerTest {
     private HistoryManager historyManager;
     private Task task1;

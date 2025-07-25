@@ -58,14 +58,23 @@ public class InMemoryTaskManager implements TaskManager {
     //Удаление задач типа Задача
     @Override
     public void removeAllTasks() {
+        for (Integer taskId : tasks.keySet()) {
+            historyManager.remove(taskId);
+        }
         tasks.clear();
     }
 
     //Удаление задач типа Эпик
     @Override
     public void removeAllEpics() {
-        epics.clear();
+        for (Integer subtaskId : subtasks.keySet()) {
+            historyManager.remove(subtaskId);
+        }
         subtasks.clear();
+        for (Integer epicId : epics.keySet()) {
+            historyManager.remove(epicId);
+        }
+        epics.clear();
     }
 
     //Удаление задач типа Подзадача
@@ -75,6 +84,9 @@ public class InMemoryTaskManager implements TaskManager {
         for (Epic epic : epics.values()) {
             epic.getSubtasksIds().clear();
             calculateEpicStatus(epic.getId());
+        }
+        for (Integer subtaskId : subtasks.keySet()) {
+            historyManager.remove(subtaskId);
         }
         subtasks.clear();
     }
@@ -116,7 +128,6 @@ public class InMemoryTaskManager implements TaskManager {
             generateId(newTask);
             task.setId(newTask.getId());
             tasks.put(newTask.getId(), newTask);
-            historyManager.add(task);
         }
     }
 
@@ -130,7 +141,6 @@ public class InMemoryTaskManager implements TaskManager {
             generateId(newEpic);
             epic.setId(newEpic.getId());
             epics.put(newEpic.getId(), newEpic);
-            historyManager.add(epic);
         }
     }
 
@@ -168,7 +178,6 @@ public class InMemoryTaskManager implements TaskManager {
     public void updateTask(Task task) {
         if (tasks.containsKey(task.getId())) {
             tasks.put(task.getId(), task);
-            historyManager.add(task);
         } else {
             System.out.println("Ошибка обновления! Переданная задача содержит некорректный идентификатор.");
         }
