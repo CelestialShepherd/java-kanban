@@ -7,13 +7,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-//TODO: Требуется проверить удаление из разных частей (начало, середина, конец)
-//TODO: Требуется проверить порядок элементов в истории после удаления
 class InMemoryHistoryManagerTest {
     private HistoryManager historyManager;
     private Task task1;
@@ -47,40 +45,49 @@ class InMemoryHistoryManagerTest {
 
     //Проверка удаления из начала связного списка
     @Test
-    void ShouldRemoveFirstTaskFromHistoryMap() {
+    void shouldRemoveFirstTaskFromHistoryMap() {
         historyManager.add(task1);
         historyManager.add(task2);
         historyManager.add(task3);
+        //Удаляем первую задачу
         historyManager.remove(task1.getId());
 
-        assertFalse(historyManager.getHistory().contains(task1));
+        assertEquals(new ArrayList<Task>(List.of(task2, task3)),
+                historyManager.getHistory(),
+                "Задача из начала связного списка не была удалена из истории");
     }
 
     //Проверка удаления из середины связного списка
     @Test
-    void ShouldRemoveMiddleTaskFromHistoryMap() {
+    void shouldRemoveMiddleTaskFromHistoryMap() {
         historyManager.add(task1);
         historyManager.add(task2);
         historyManager.add(task3);
+        //Удаляем первую задачу
         historyManager.remove(task2.getId());
 
-        assertFalse(historyManager.getHistory().contains(task2));
+        assertEquals(new ArrayList<Task>(List.of(task1, task3)),
+                historyManager.getHistory(),
+                "Задача из середины связного списка не была удалена из истории");
     }
 
     //Проверка удаления из конца связного списка
     @Test
-    void ShouldRemoveLastTaskFromHistoryMap() {
+    void shouldRemoveLastTaskFromHistoryMap() {
         historyManager.add(task1);
         historyManager.add(task2);
         historyManager.add(task3);
+        //Удаляем первую задачу
         historyManager.remove(task3.getId());
 
-        assertFalse(historyManager.getHistory().contains(task3));
+        assertEquals(new ArrayList<Task>(List.of(task1, task2)),
+                historyManager.getHistory(),
+                "Задача из конца связного списка не была удалена из истории");
     }
 
     //Проверка, что история передвигает в конец уже существующую задачу, не увеличиваясь в размерах
     @Test
-    void ShouldNotHistoryMapAddExistingTask() {
+    void shouldNotHistoryMapAddExistingTask() {
         System.out.println("Добавление задач:");
         historyManager.add(task1);
         historyManager.add(task2);

@@ -128,7 +128,6 @@ public class InMemoryTaskManager implements TaskManager {
             generateId(newTask);
             task.setId(newTask.getId());
             tasks.put(newTask.getId(), newTask);
-            getTaskById(task.getId()); // Для занесения в историю
         }
     }
 
@@ -179,7 +178,6 @@ public class InMemoryTaskManager implements TaskManager {
     public void updateTask(Task task) {
         if (tasks.containsKey(task.getId())) {
             tasks.put(task.getId(), task);
-            getTaskById(task.getId()); // Для занесения в историю
         } else {
             System.out.println("Ошибка обновления! Переданная задача содержит некорректный идентификатор.");
         }

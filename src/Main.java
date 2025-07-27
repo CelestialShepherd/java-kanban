@@ -21,9 +21,9 @@ public class Main {
                 "В мусоропровод",
                 TaskStatus.NEW);
         taskManager.createTask(task1);
-        taskManager.getTaskById(task1.getId());
+        taskManager.getTaskById(task1.getId()); // Для занесения в историю
         taskManager.createTask(task2);
-        taskManager.getTaskById(task2.getId());
+        taskManager.getTaskById(task2.getId()); // Для занесения в историю
     //Создание эпиков
         //id: 3
         Epic epic1 = new Epic("Уход за животным",
@@ -57,6 +57,7 @@ public class Main {
         System.out.println("\r\nИзменяем статусы задач");
         task1.setTaskStatus(TaskStatus.DONE);
         taskManager.updateTask(task1);
+        taskManager.getTaskById(task1.getId()); // Для занесения в историю
         subtask1.setTaskStatus(TaskStatus.DONE);
         taskManager.updateSubtask(subtask1);
         subtask3.setTaskStatus(TaskStatus.IN_PROGRESS);

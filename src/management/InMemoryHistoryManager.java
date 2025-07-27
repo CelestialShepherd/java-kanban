@@ -38,10 +38,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         if (task.equals(null)) {
             System.out.println("Ошибка добавления в историю! Переданная задача равна null");
         } else {
-            //Удаляем дубликат при наличии
-            if (historyIdsMap.containsKey(task.getId())) {
-                removeNode(historyIdsMap.get(task.getId()));
-            }
+            removeNode(historyIdsMap.get(task.getId()));
             linkLast(task.getId(), new Task(task.getName(), task.getDescription(), task.getTaskStatus()));
         }
     }
@@ -52,25 +49,21 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
     public void linkLast(int currId, Task task) {
+        //Создаем новый узел
+        Node newNode = new Node(task, tail);
+        //Добавляем новый узел в хеш-таблицу
+        historyIdsMap.put(currId, newNode);
         if (head == null) {
             //Сценарий 1: Добавление самой первой задачи
-            //Создаем новый узел с пустой ссылкой на предыдущий элемент
-            Node newNode = new Node(task, null);
-            //Добавляем новый узел в хеш-таблицу
-            historyIdsMap.put(currId, newNode);
-            //Узел становится первым и последним в списке
-            head = tail = newNode;
+            //Узел становится первым списке
+            head = newNode;
         } else {
             //Сценарий 2: Добавление элемента в уже заполненный список
-            //Создаем новый узел
-            Node newNode = new Node(task, tail);
-            //Добавляем новый узел в хеш-таблицу
-            historyIdsMap.put(currId, newNode);
             //Устанавливаем ссылку бывшему последнему элементу на текущий
             tail.next = newNode;
-            //Назначаем новый узел - последним
-            tail = newNode;
         }
+        //Новый узел - последний в списке
+        tail = newNode;
     }
 
     public ArrayList<Task> getTasks() {
@@ -84,24 +77,30 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
     public void removeNode(Node node) {
-        //Назначаем предыдущему узлу ссылку на следующий узел
-        if (node == head && node == tail) {
-            head = null;
-            tail = null;
-        } else if (node == head) {
-            head = node.next;
-            head.prev = null;
-        } else if (node == tail) {
-            tail = node.prev;
-            tail.next = null;
-        } else {
-            Node prevNode = node.prev;
-            prevNode.next = node.next;
-            Node nextNode = node.next;
-            nextNode.prev = node.prev;
+        if (node != null) {
+            //Назначаем предыдущему узлу ссылку на следующий узел
+            if (node == head && node == tail) {
+                head = null;
+                tail = null;
+            } else if (node == head) {
+                head = node.next;
+                head.prev = null;
+            } else if (node == tail) {
+                tail = node.prev;
+                tail.next = null;
+            } else {
+                Node prevNode = node.prev;
+                prevNode.next = node.next;
+                Node nextNode = node.next;
+                nextNode.prev = node.prev;
+            }
+            //Удаляем узел с задачей из истории
+            for (Integer historyId : historyIdsMap.keySet()) {
+                if (historyIdsMap.get(historyId) == node) {
+                    historyIdsMap.remove(historyId);
+                    break;
+                }
+            }
         }
-        //Удаляем узел с задачей из истории
-            node.prev = null;
-            node.next = null;
     }
 }
