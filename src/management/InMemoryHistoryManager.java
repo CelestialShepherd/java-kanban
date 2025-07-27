@@ -39,7 +39,7 @@ public class InMemoryHistoryManager implements HistoryManager {
             System.out.println("Ошибка добавления в историю! Переданная задача равна null");
         } else {
             removeNode(historyIdsMap.get(task.getId()));
-            linkLast(task.getId(), new Task(task.getName(), task.getDescription(), task.getTaskStatus()));
+            linkLast(task.getId(), task);
         }
     }
 
