@@ -4,11 +4,14 @@ import task.Subtask;
 import task.Task;
 import task.TaskStatus;
 
+import java.io.File;
+
 public class Main {
 
     public static void main(String[] args) {
         System.out.println("Поехали!");
-        TaskManager taskManager = Managers.getDefault();
+        //TaskManager taskManager = Managers.getDefault();
+        TaskManager taskManager = FileBackedTaskManager.loadFromFile(new File("E:\\tasks.txt"));
 
     //Создание задач
         System.out.println("Создание задач");
