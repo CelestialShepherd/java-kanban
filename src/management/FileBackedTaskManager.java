@@ -153,7 +153,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     //Удаление задач типа Подзадача
     @Override
-    public void removeAllSubtasks() {}
+    public void removeAllSubtasks() {
+        super.removeAllSubtasks();
+        save();
+    }
 
     //2.d. Создание. Сам объект должен передаваться в качестве параметра
     //Создание задачи типа Задача
@@ -222,6 +225,3 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 }
 
-class ManagerSaveException extends RuntimeException {
-    public ManagerSaveException() {}
-}
