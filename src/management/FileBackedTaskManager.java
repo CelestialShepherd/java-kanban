@@ -12,27 +12,92 @@ import java.util.*;
 
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
-    private static final String[] taskFields = new String[] {"id", "type", "name", "status", "description", "epic"};
+    private static final String fileHeader = "id,type,name,status,description,epic";
     private File file;
+    private int taskId = 1;
+    private HashMap<Integer, Task> tasks;
+    private HashMap<Integer, Epic> epics;
+    private HashMap<Integer, Subtask> subtasks;
+
+    @Override
+    public void setTaskId(int taskId) {
+        this.taskId = taskId;
+        super.setTaskId(taskId);
+    }
 
     public FileBackedTaskManager(File file) {
+        tasks = super.getTasks();
+        epics = super.getEpics();
+        subtasks = super.getSubtasks();
         this.file = file;
+    }
+
+    private static class StringTaskConverter {
+        //Создание задачи из строки
+        public static Task fromString(String value) {
+            //0-id, 1-type, 2-name, 3-status, 4-description, 5-epic
+            String[] taskData = value.split(",");
+            TaskType taskType = TaskType.valueOf(taskData[1]);
+            String name = taskData[2];
+            TaskStatus taskStatus = TaskStatus.valueOf(taskData[3]);
+            String description = taskData[4];
+            //Создаем объект на её основе
+            Task task = null;
+            if (taskType == TaskType.SUBTASK) {
+                int epicId = Integer.parseInt(taskData[5]);
+                task = new Subtask(epicId, name, description, taskStatus);
+            } else if (taskType == TaskType.EPIC) {
+                task = new Epic(name, description);
+            } else {
+                task = new Task(name, description, taskStatus);
+            }
+            //Задаем идентификатор
+            task.setId(Integer.parseInt(taskData[0]));
+            return task;
+        }
+
+        //Сохранение задачи в строку
+        public static String toString(Task task) {
+            //Получение типа задачи (и идентификатора эпика, если присутствует)
+            String epicId = "";
+            String taskType = "";
+            switch (task) {
+                case Subtask s -> {
+                    taskType = TaskType.SUBTASK.toString();
+                    epicId = Integer.toString(s.getEpicId());
+                }
+                case Epic e -> taskType = TaskType.EPIC.toString();
+                default -> taskType = TaskType.TASK.toString();
+            }
+            return String.join(",",
+                    Integer.toString(task.getId()),
+                    taskType,
+                    task.getName(),
+                    task.getTaskStatus().toString(),
+                    task.getDescription(),
+                    epicId);
+        }
     }
 
     //Методы взаимодействия с файлами
     //Сохранение в файл
-    public void save() {
+    private void save() {
         try (Writer fw = new FileWriter(file, StandardCharsets.UTF_8)) {
-            fw.write(String.join(",", taskFields) + "\r\n");
-            List<Task> allTasks = super.getHistory();
+            fw.write(fileHeader + "\r\n");
+            //Заполняем полный список задач
+            List<Task> allTasks = super.getAllTasksList();
+            allTasks.addAll(super.getAllEpicsList());
+            allTasks.addAll(super.getAllSubtasksList());
+            //Сортируем список по Id
             allTasks.sort(new Comparator<Task>() {
                 @Override
                 public int compare(Task o1, Task o2) {
                     return Integer.compare(o1.getId(),o2.getId());
                 }
             });
+            //Пишем в файл
             for (Task task : allTasks) {
-                fw.write(toString(task) + "\r\n");
+                fw.write(StringTaskConverter.toString(task) + "\r\n");
             }
         } catch (IOException e) {
             throw new ManagerSaveException();
@@ -42,98 +107,32 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     //Загружаемся из файла
     public static FileBackedTaskManager loadFromFile(File file) {
         try {
-            ArrayList<String> lines;
             if (!(file.exists()))
                 file.createNewFile();
+            FileBackedTaskManager backedTaskManager = new FileBackedTaskManager(file);
             //Чтение всех строк из файла (первая строка опускается)
             String fileContent = Files.readString(file.toPath(), StandardCharsets.UTF_8);
             if (!fileContent.isEmpty()) {
-                lines = new ArrayList<>(Arrays.asList(fileContent.split("\r\n")));
+                ArrayList<String> lines = new ArrayList<>(Arrays.asList(fileContent.split("\r\n")));
                 lines.removeFirst();
-                //Создание сущностей с помощью менеджера
-                FileBackedTaskManager backedTaskManager = new FileBackedTaskManager(file);
                 for (String line : lines) {
-                    Task newTask = backedTaskManager.fromString(line);
+                    Task newTask = StringTaskConverter.fromString(line);
                     switch (newTask) {
-                        case Subtask s -> backedTaskManager.createSubtask((Subtask) newTask);
-                        case Epic e -> backedTaskManager.createEpic((Epic) newTask);
-                        default -> {
-                            backedTaskManager.createTask(newTask);
-                            backedTaskManager.getTaskById(newTask.getId());
-                        }
+                        case Subtask s -> backedTaskManager.subtasks.put(newTask.getId(), (Subtask) newTask);
+                        case Epic e -> backedTaskManager.epics.put(newTask.getId(), (Epic) newTask);
+                        default -> backedTaskManager.tasks.put(newTask.getId(), newTask);
+                    }
+                    //Синхронизация счетчиков taskId
+                    if (newTask.getId() > backedTaskManager.taskId) {
+                        backedTaskManager.setTaskId(newTask.getId());
                     }
                 }
             }
+            return backedTaskManager;
         } catch (IOException e) {
             e.getStackTrace();
             throw new ManagerSaveException();
         }
-        return new FileBackedTaskManager(file);
-    }
-
-    //Сохранение задачи в строку
-    public String toString(Task task) {
-        Map<String, String> taskMap = initializeMap();
-        //Заполняем хеш-таблицу задачи
-        for (String field : taskFields) {
-            switch (field) {
-                case "id" -> taskMap.put(field, Integer.toString(task.getId()));
-                case "name" -> taskMap.put(field, task.getName());
-                case "status" -> taskMap.put(field, task.getTaskStatus().toString());
-                case "description" -> taskMap.put(field, task.getDescription());
-                default -> taskMap.put(field,"");
-            }
-        }
-        //Определяем тип задачи
-        String stringTaskType = null;
-        switch (task) {
-            case Subtask s -> {
-                stringTaskType = TaskType.SUBTASK.toString();
-                taskMap.put("epic", Integer.toString(s.getEpicId()));
-            }
-            case Epic e -> stringTaskType = TaskType.EPIC.toString();
-            default -> stringTaskType = TaskType.TASK.toString();
-        }
-        taskMap.put("type", stringTaskType);
-
-        return String.join(",", taskMap.values());
-    }
-
-    //Вспомогательный метод по первичной инициализации связной хэш-таблицы
-    private LinkedHashMap<String, String> initializeMap() {
-        LinkedHashMap<String, String> taskMap = new LinkedHashMap<>();
-        for (String key : taskFields) {
-            taskMap.put(key, "");
-        }
-        return taskMap;
-    }
-
-    //Создание задачи из строки
-    public Task fromString(String value) {
-        String[] taskData = value.split(",");
-        Map<String, String> taskMap = initializeMap();
-        Task task = null;
-        //Заполняем хеш-таблицу
-        for (int i = 0; i < taskData.length; i++) {
-            taskMap.put(taskFields[i], taskData[i]);
-        }
-        //Создаем объект на её основе
-        if (taskMap.get("type").equals(TaskType.SUBTASK.toString())) {
-            task = new Subtask(Integer.parseInt(taskMap.get("epic")),
-                    taskMap.get("name"),
-                    taskMap.get("description"),
-                    TaskStatus.fromString(taskMap.get("status")));
-        } else if (taskMap.get("type").equals(TaskType.EPIC.toString())) {
-            task = new Epic(taskMap.get("name"),
-                    taskMap.get("description"));
-        } else {
-            task = new Task(taskMap.get("name"),
-                    taskMap.get("description"),
-                    TaskStatus.fromString(taskMap.get("status")));
-        }
-        //Задаем идентификатор
-        task.setId(Integer.parseInt(taskMap.get("id")));
-        return task;
     }
 
     //2.b. Удаление всех задач

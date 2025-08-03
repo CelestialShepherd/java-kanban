@@ -11,6 +11,6 @@ public enum TaskStatus {
                 return status;
             }
         }
-        return null;
+        throw new IllegalArgumentException();
     }
 }
