@@ -10,12 +10,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class InMemoryTaskManager implements TaskManager {
-    private int taskId = 1;
+    protected int taskId = 1;
     //1. Храним задачи всех типов
-    private HashMap<Integer, Task> tasks;
-    private HashMap<Integer, Epic> epics;
-    private HashMap<Integer, Subtask> subtasks;
-    private HistoryManager historyManager;
+    protected HashMap<Integer, Task> tasks;
+    protected HashMap<Integer, Epic> epics;
+    protected HashMap<Integer, Subtask> subtasks;
+    protected HistoryManager historyManager;
+
+    public void setTaskId(int taskId) {
+        this.taskId = taskId;
+    }
 
     public InMemoryTaskManager() {
         tasks = new HashMap<>();
